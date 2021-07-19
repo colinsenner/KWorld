@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <stdio.h>
+
 #include "ThreadHideFromDebugger.h"
 
 int main() {
@@ -7,8 +8,7 @@ int main() {
 
   if (ThreadHideFromDebugger::Enable()) {
     printf("[+] Thread hidden from debugger\n");
-  }
-  else {
+  } else {
     printf("[-] Problem hiding thread from debugger\n");
     return -1;
   }
