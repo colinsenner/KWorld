@@ -17,11 +17,13 @@ bool ThreadHideFromDebugger::Enable() {
   if (!addr)
     return false;
 
-  fp_NtSetInformationThread _NtSetInformationThread =
-      (fp_NtSetInformationThread)addr;
+  fp_NtSetInformationThread _NtSetInformationThread = (fp_NtSetInformationThread)addr;
 
-  _NtSetInformationThread(GetCurrentThread(), (THREAD_INFORMATION_CLASS)0x11,
-                          nullptr, 0);
+  NTSTATUS errorCode = _NtSetInformationThread(GetCurrentThread(), (THREAD_INFORMATION_CLASS)0x11, nullptr, 0);
 
-  return true;
+  if (errorCode == 0L) {
+    return true;
+  }
+
+  return false;
 }
