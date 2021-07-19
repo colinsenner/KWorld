@@ -6,7 +6,22 @@ Kernel driver for removing ThreadHideFromDebugger from processes.
 * VMWare Player
 
 # Setup VMWare
-...
+
+## BCDEdit
+
+```bcdedit /debug on```
+
+```bcdedit /dbgsettings serial debugport:n baudrate:115200```
+
+where n is the number of a COM port on the virtual machine.
+
+KDNET?
+
+## Create a named pipe
+* https://docs.vmware.com/en/VMware-Workstation-Pro/16.0/com.vmware.ws.using.doc/GUID-70C25BED-6791-4AF2-B530-8030E39ED749.html
+
+```\\.\pipe\kdebug```
 
 # Setup Host machine
 * Windows SDK https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/
+
