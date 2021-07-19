@@ -17,4 +17,6 @@ int main() {
     printf(".");
     ::Sleep(250);
   }
+
+  printf("[+] Exit\n");
 }

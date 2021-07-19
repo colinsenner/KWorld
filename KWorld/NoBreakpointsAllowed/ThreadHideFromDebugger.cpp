@@ -3,9 +3,9 @@
 #include <Windows.h>
 
 bool ThreadHideFromDebugger::Enable() {
-  typedef NTSTATUS(NTAPI * fp_NtSetInformationThread)(
-      HANDLE ThreadHandle, THREAD_INFORMATION_CLASS ThreadInformationClass,
-      PVOID ThreadInformation, ULONG ThreadInformationLength);
+  typedef NTSTATUS(NTAPI * fp_NtSetInformationThread)(HANDLE ThreadHandle,
+                                                      THREAD_INFORMATION_CLASS ThreadInformationClass,
+                                                      PVOID ThreadInformation, ULONG ThreadInformationLength);
 
   HMODULE hNtdll = ::GetModuleHandle(L"ntdll.dll");
 
