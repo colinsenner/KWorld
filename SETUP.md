@@ -15,7 +15,8 @@ Kernel driver for removing ThreadHideFromDebugger from processes.
 
 where n is the number of a COM port on the virtual machine.
 
-KDNET?
+## KDNET
+* https://www.youtube.com/watch?v=V7DJ_ptkOpM
 
 ## Create a named pipe
 * https://docs.vmware.com/en/VMware-Workstation-Pro/16.0/com.vmware.ws.using.doc/GUID-70C25BED-6791-4AF2-B530-8030E39ED749.html
