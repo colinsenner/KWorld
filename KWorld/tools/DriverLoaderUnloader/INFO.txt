@@ -1,0 +1,138 @@
+Driver Loader/Unloader
+v.1.0.0.0
+Copyright (c) 2019-2021 by dennisbabkin.com. All rights reserved.
+(Windows 7/8/8.1/10)
+
+LAST MODIFIED: May. 11, 2021
+
+
+DESCRIPTION:
+================
+
+Driver Loader/Unloader tool was designed for developers to facilitate testing of their 
+Windows kernel drivers and services.
+
+The following features are supported:
+
+- Register and unregister Windows device or kernel drivers, as well as the Windows services.
+
+- Start and stop kernel drivers and services.
+
+- Put operating system into the test signing mode for running unsigned drivers, as well as to 
+  turn test signing off.
+
+- All operations are supported through GUI.
+
+
+
+
+INSTALLATION / UNINSTALLATION:
+================================
+
+This utility does not require installation and can be run from any location on the disk.
+
+Pick the bitness of the executable that suits your operating system:
+
+ - DriverLoaderUnloader64.exe for 64-bit version of Windows.
+
+ - DriverLoaderUnloader32.exe for 32-bit version of Windows.
+
+INFO: Using of the 32-bit version of the tool on a 64-bit operating system is allowed, but 
+      may be subject to the file system redirection for the System32/Drivers folder. Thus, 
+      a more convenient 64-bit version of the tool is provided.
+
+
+
+
+OPERATION:
+================
+
+Make sure to run the Driver Loader/Unloader tool as administrator.
+
+To open a driver file that you want to register/unregister, or to start/stop it, first drag 
+its .sys/.dll/.exe binary file into the tool's main window. Or, click the Browse button and 
+select the binary file from the file picker window. Optionally, you can go to File -> 
+Open Driver/Service File to do the same, or press Ctrl+O keyboard shortcut on the keyboard.
+
+When driver/service binary is loaded into the Driver Loader/Unloader tool you have the 
+following options:
+
+- Click Register Driver to register the driver that is currently selected in the tool.
+  (Driver or service registration is required before you can start it.)
+  (Registration is persistent after a reboot.)
+  (This option is available via Ctrl+R keyboard shortcut.)
+
+- Click Unregister Driver to remove previous registration for the driver that is currently 
+  selected in the tool.
+  (If driver or service was running previously, it will be stopped first.)
+  (This option is available via Ctrl+U keyboard shortcut.)
+
+- Start Driver to start a previously registered driver or service.
+  (There will be no confirmation if the driver/service was started successfully.)
+  (This option is available via Ctrl+S keyboard shortcut.)
+
+- Stop Driver to stop previously started driver or service.
+  (There will be no confirmation if the driver/service was stopped successfully.)
+  (Stopping a driver/service does not unregister it. So it can be re-started again.)
+  (This option is available via Ctrl+D keyboard shortcut.)
+
+The Actions menu of the tool has the option to Register & Start Driver, that you can also 
+invoke by using the Ctrl+Shift+S keyboard shortcut. Such option will combine registration 
+and start of the driver/service in one action.
+
+INFO: To view the logging output from your driver/service it is recommended to use a tool
+      like DebugView:
+       https://docs.microsoft.com/en-us/sysinternals/downloads/debugview
+
+
+
+
+OPTIONS:
+================
+
+By selecting Edit -> Test Signing (Kernel Drivers) you can enable or disable the test 
+signing mode for running unsigned drivers. The original state of that mode will be displayed
+with a checkmark in that menu option. A checkmark will indicate that the test signing is 
+currently enabled. (If this option is grayed out, make sure to run the Driver Loader/Unloader 
+tool as administrator.)
+
+NOTE that changing of the test signing mode will require a reboot, and won't be indicated 
+     in the tool prior to that.
+
+SECURITY WARNING: Enabling test signing mode may jeopardize the security of the operating 
+system it was enabled on. Additionally it may disrupt the boot process of your operating system. 
+Thus, it is highly recommended to enable it ONLY in a test operating system, such a virtual machine!
+
+
+
+
+
+
+
+
+
+
+To download your copy go to:
+https://www.dennisbabkin.com/driverloader/
+
+For bug reports go to:
+https://www.dennisbabkin.com/sfb/?what=bug&name=DriverLoaderUnloader
+
+
+Thank you!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
