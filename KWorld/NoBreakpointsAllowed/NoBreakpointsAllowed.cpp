@@ -5,6 +5,7 @@
 
 int main() {
   printf("[+] Starting\n");
+  printf("[+] Main thread id: 0x%X\n", GetCurrentThreadId());
 
   if (ThreadHideFromDebugger::Enable()) {
     printf("[+] Thread hidden from debugger\n");
@@ -15,7 +16,7 @@ int main() {
 
   while (true) {
     printf(".");
-    ::Sleep(250);
+    ::Sleep(1000);
   }
 
   printf("[+] Exit\n");
