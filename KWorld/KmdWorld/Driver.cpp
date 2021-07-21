@@ -3,7 +3,7 @@
 
 #include "DrvCommon.h"
 
-DRIVER_INITIALIZE DriverEntry;
+extern "C" DRIVER_INITIALIZE DriverEntry;
 
 VOID KmdWorldUnload(IN WDFDRIVER Driver) {
   UNREFERENCED_PARAMETER(Driver);
@@ -24,6 +24,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 
   config.DriverInitFlags = WdfDriverInitNonPnpDriver;
   config.EvtDriverUnload = KmdWorldUnload;
+  config.DriverPoolTag = DRIVER_POOL_TAG;
 
   // Finally, create the driver object
   status = WdfDriverCreate(DriverObject, RegistryPath, WDF_NO_OBJECT_ATTRIBUTES, &config, &driver);
