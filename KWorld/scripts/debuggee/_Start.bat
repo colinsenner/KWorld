@@ -20,5 +20,5 @@ CD /D "%~dp0"
 :: Your codes should start from the following line
 
 call _Copy.bat
-sc create bangstar type= kernel binpath= "C:\Windows\System32\Drivers\bangstar.sys"
-sc start bangstar
+sc create KmdWorld type= kernel binpath= "C:\Windows\System32\Drivers\KmdWorld.sys"
+sc start KmdWorld
