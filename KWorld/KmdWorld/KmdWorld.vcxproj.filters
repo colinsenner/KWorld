@@ -24,12 +24,12 @@
     </Inf>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Driver.cpp">
+    <ClCompile Include="Driver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DrvCommon.h">
+    <ClInclude Include="..\Common\DriverCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
