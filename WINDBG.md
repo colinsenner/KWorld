@@ -2,7 +2,7 @@
 
 
 ```
-!process 0 0 NoBreakpointsAllowed64.exe
+!process 0 0 nba.exe
 
 !process addr 2
 
@@ -30,4 +30,18 @@ ffffa103`f083f600  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00  ............
 
 # Unset bit 3 (0x4)
 eb ffffa103`f083f590 2  (6, unset bit 3 = 2)
+```
+
+# Structures
+```
+EPROCESS
+...
++0x5e0 ThreadListHead   : _LIST_ENTRY
+...
+
+
+ETHREAD
+...
++0x4e8 ThreadListEntry  : _LIST_ENTRY
+...
 ```
