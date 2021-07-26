@@ -5,8 +5,8 @@
 
 int main() {
   printf("[+] Starting\n");
-  printf("[+] PID: %d\n", GetCurrentProcessId());
-  printf("[+] Main thread id: 0x%X\n", GetCurrentThreadId());
+  printf("[+] PID: %d (0x%X)\n", GetCurrentProcessId(), GetCurrentProcessId());
+  printf("[+] Main thread id: %d (0x%X)\n", GetCurrentThreadId(), GetCurrentThreadId());
 
   if (ThreadHideFromDebugger::Enable()) {
     printf("[+] Thread hidden from debugger\n");

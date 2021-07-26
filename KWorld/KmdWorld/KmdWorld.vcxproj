@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\DriverCommon.h" />
+    <ClInclude Include="ProcessInfos.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

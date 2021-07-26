@@ -3,69 +3,158 @@
 #include <wdf.h>
 
 #include "..\Common\DriverCommon.h"
+#include "ProcessInfos.h"
 
 DRIVER_INITIALIZE DriverEntry;
 
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
 
-//
-// Step 1: Pass pid to kernel and return success or failure
-// Step 2: Lookup process by pid
-// Step 3: Lookup structure offsets
-//
+LIST_ENTRY ProcessListHead;
+
+BOOLEAN RemoveProcessFromList(PLIST_ENTRY ListHead, HANDLE pid) {
+//  PLIST_ENTRY pEntry = ListHead->Flink;
+
+  //while (pEntry->Flink != ListHead) {
+  //  PROCESS_INFO* procInfo = CONTAINING_RECORD(pEntry, PROCESS_INFO, ListEntry);
+
+  //  if (procInfo->pid == pid) {
+  //    LIST_ENTRY tmp;
+  //    tmp.Flink = pEntry->Flink;
+  //    tmp.Blink = pEntry->Blink;
+
+  //    DbgPrintPrefix("    %llu removed from process list\n", (ULONG_PTR)procInfo->pid);
+  //    ExFreePoolWithTag(procInfo, DRIVER_POOL_TAG);
+  //    RemoveEntryList(pEntry);
+
+  //    pEntry = &tmp;
+  //  }
+
+  //  pEntry = pEntry->Flink;
+  //}
+
+  PLIST_ENTRY pLink = NULL;
+
+  for (pLink = ListHead->Flink; pLink != (PLIST_ENTRY)&ListHead->Flink; pLink = pLink->Flink) {
+    PPROCESS_INFO pProcInfo = CONTAINING_RECORD(pLink, PROCESS_INFO, ListEntry);
+
+    if (pProcInfo->pid == pid) {
+      DbgPrintPrefix("    %llu removed from process list\n", (ULONG_PTR)pProcInfo->pid);
+      ExFreePoolWithTag(pProcInfo, DRIVER_POOL_TAG);
+
+      RemoveEntryList(pLink);
+    }
+  }
+
+  return TRUE;
+}
+
+BOOLEAN IsProcessInList(PLIST_ENTRY ListHead, HANDLE pid) {
+  PLIST_ENTRY pEntry = ListHead->Flink;
+
+  while (pEntry && pEntry != ListHead) {
+    PROCESS_INFO* procInfo = (PROCESS_INFO*)CONTAINING_RECORD(pEntry, PROCESS_INFO, ListEntry);
+
+    if (procInfo->pid == pid) {
+      return TRUE;
+    }
+
+    pEntry = pEntry->Flink;
+  }
+
+  return FALSE;
+}
+
+void AddProcessToList(PLIST_ENTRY ListHead, HANDLE pid) {
+  PPROCESS_INFO pProcInfo;
+  pProcInfo = (PPROCESS_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_INFO), DRIVER_POOL_TAG);
+
+  if (pProcInfo) {
+    pProcInfo->pid = pid;
+    InsertHeadList(ListHead, &pProcInfo->ListEntry);
+
+    DbgPrintPrefix("Process id %llu added to process list (%p)", (ULONG_PTR)pid, ListHead);
+  }
+}
+
+void sCreateProcessNotifyRoutine(HANDLE ppid, HANDLE pid, BOOLEAN create) {
+  UNREFERENCED_PARAMETER(ppid);
+
+  if (create) {
+    if (!IsProcessInList(&ProcessListHead, pid)) {
+      AddProcessToList(&ProcessListHead, pid);
+    }
+  } else {
+    RemoveProcessFromList(&ProcessListHead, pid);
+  }
+}
+
+void sCreateThreadNotifyRoutine(HANDLE pid, HANDLE tid, BOOLEAN create) {
+  UNREFERENCED_PARAMETER(pid);
+  UNREFERENCED_PARAMETER(tid);
+  UNREFERENCED_PARAMETER(create);
+
+}
 
 void DriverUnload(PDRIVER_OBJECT DriverObject) {
   DbgPrintPrefix("Driver unloaded, deleting symbolic links and devices");
   IoDeleteDevice(DriverObject->DeviceObject);
   IoDeleteSymbolicLink(&DEVICE_SYMBOLIC_NAME);
+
+  // Unsubscribe
+  PsSetCreateProcessNotifyRoutine(sCreateProcessNotifyRoutine, TRUE);
+  PsRemoveCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
+
+  // Free memory ...
 }
 
 NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
+  UNREFERENCED_PARAMETER(pid);
+
   NTSTATUS status = STATUS_SUCCESS;
 
-  PEPROCESS pProcess = NULL;
+  // PEPROCESS pProcess = NULL;
 
-  status = PsLookupProcessByProcessId((HANDLE)pid, &pProcess);
+  // status = PsLookupProcessByProcessId((HANDLE)pid, &pProcess);
 
-  if (status != STATUS_SUCCESS) {
-    DbgPrintPrefix("Couldn't find the process by pid %zu. Status: 0x%X", pid, status);
-    return status;
-  }
+  // if (status != STATUS_SUCCESS) {
+  //  DbgPrintPrefix("Couldn't find the process by pid %zu. Status: 0x%X", pid, status);
+  //  return status;
+  //}
 
-  DbgPrintPrefix("Found process %p", pProcess);
+  // DbgPrintPrefix("Found process %p", pProcess);
 
-  ASSERT(pProcess);
+  // ASSERT(pProcess);
 
-  // Calculate
-  PLIST_ENTRY pThreadListHead = (PLIST_ENTRY)ADDPTR(pProcess, 0x5e0);
+  //// Calculate
+  // PLIST_ENTRY pThreadListHead = (PLIST_ENTRY)ADDPTR(pProcess, 0x5e0);
 
-  DbgPrintPrefix("ThreadListHead: %p", pThreadListHead);
+  // DbgPrintPrefix("ThreadListHead: %p", pThreadListHead);
 
-  PLIST_ENTRY entry = pThreadListHead;
+  // PLIST_ENTRY entry = pThreadListHead;
 
-  while (entry != pThreadListHead->Flink) {
-    entry = entry->Flink;
+  // while (entry != pThreadListHead->Flink) {
+  //  entry = entry->Flink;
 
-    // Calculate
-    PVOID pThread = SUBPTR(entry, 0x4e8);
+  //  // Calculate
+  //  PVOID pThread = SUBPTR(entry, 0x4e8);
 
-    ASSERT(pThread);
+  //  ASSERT(pThread);
 
-    DbgPrintPrefix("  Thread: %p", pThread);
+  //  DbgPrintPrefix("  Thread: %p", pThread);
 
-    // Calculate offset: 0x510 on ETHREAD
-    PULONG CrossThreadFlags = (PULONG)ADDPTR(pThread, 0x510);
+  //  // Calculate offset: 0x510 on ETHREAD
+  //  PULONG CrossThreadFlags = (PULONG)ADDPTR(pThread, 0x510);
 
-    if (CHECK_BIT(*CrossThreadFlags, 2)) {
-      DbgPrintPrefix("    HideFromDebugger: Set (0x%x)", *CrossThreadFlags);
+  //  if (CHECK_BIT(*CrossThreadFlags, 2)) {
+  //    DbgPrintPrefix("    HideFromDebugger: Set (0x%x)", *CrossThreadFlags);
 
-      // Unset HideFromDebugger
-      *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
+  //    // Unset HideFromDebugger
+  //    *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
 
-      DbgPrintPrefix("    HideFromDebugger: Removed (0x%x)", *CrossThreadFlags);
-    }
-  }
+  //    DbgPrintPrefix("    HideFromDebugger: Removed (0x%x)", *CrossThreadFlags);
+  //  }
+  //}
 
   return status;
 }
@@ -125,10 +214,9 @@ NTSTATUS HandleIrpCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 }
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
-  UNREFERENCED_PARAMETER(DriverObject);
   UNREFERENCED_PARAMETER(RegistryPath);
 
-  NTSTATUS status = 0;
+  NTSTATUS status = STATUS_SUCCESS;
 
   // routine that will execute when our driver is unloaded/service is stopped
   DriverObject->DriverUnload = DriverUnload;
@@ -140,10 +228,27 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
   DriverObject->MajorFunction[IRP_MJ_CREATE] = HandleIrpCreateClose;
   DriverObject->MajorFunction[IRP_MJ_CLOSE] = HandleIrpCreateClose;
 
+  // Used to track processes
+  InitializeListHead(&ProcessListHead);
+
   DbgPrintPrefix("Driver loaded");
 
-  IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE,
+  // Subscribe to notifications
+  status = PsSetCreateProcessNotifyRoutine(sCreateProcessNotifyRoutine, FALSE);
+  if (!NT_SUCCESS(status)) {
+    DbgPrintPrefix("Could not subscribe to process notify routine");
+    return status;
+  }
+
+  status = PsSetCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
+  if (!NT_SUCCESS(status)) {
+    DbgPrintPrefix("Could not subscribe to thread notify routine");
+    return status;
+  }
+
+  status = IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE,
                  &DriverObject->DeviceObject);
+
   if (!NT_SUCCESS(status)) {
     DbgPrintPrefix("Could not create device %wZ", DEVICE_NAME);
   } else {
@@ -151,6 +256,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
   }
 
   status = IoCreateSymbolicLink(&DEVICE_SYMBOLIC_NAME, &DEVICE_NAME);
+
   if (NT_SUCCESS(status)) {
     DbgPrintPrefix("Symbolic link %wZ created", DEVICE_SYMBOLIC_NAME);
   } else {

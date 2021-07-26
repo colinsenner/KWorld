@@ -32,5 +32,8 @@
     <ClInclude Include="..\Common\DriverCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProcessInfos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
