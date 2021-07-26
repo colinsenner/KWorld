@@ -40,8 +40,6 @@ NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
   // Calculate
   PLIST_ENTRY pThreadListHead = (PLIST_ENTRY)ADDPTR(pProcess, 0x5e0);
 
-  ASSERT(pThreadListHead);
-
   DbgPrintPrefix("ThreadListHead: %p", pThreadListHead);
 
   PLIST_ENTRY entry = pThreadListHead;
@@ -56,18 +54,16 @@ NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
 
     DbgPrintPrefix("  Thread: %p", pThread);
 
-    // offset: 0x510 on ETHREAD
+    // Calculate offset: 0x510 on ETHREAD
     PULONG CrossThreadFlags = (PULONG)ADDPTR(pThread, 0x510);
 
-    DbgPrintPrefix("    CrossThreadFlags: 0x%x", *CrossThreadFlags);
-
     if (CHECK_BIT(*CrossThreadFlags, 2)) {
-      DbgPrintPrefix("    HideFromDebugger: Set");
+      DbgPrintPrefix("    HideFromDebugger: Set (0x%x)", *CrossThreadFlags);
 
       // Unset HideFromDebugger
       *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
 
-      DbgPrintPrefix("    HideFromDebugger: Removed");
+      DbgPrintPrefix("    HideFromDebugger: Removed (0x%x)", *CrossThreadFlags);
     }
   }
 
