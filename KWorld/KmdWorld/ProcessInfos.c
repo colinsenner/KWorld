@@ -4,6 +4,18 @@
 
 #include "..\Common\DriverCommon.h"
 
+typedef struct _THREAD_INFO {
+  LIST_ENTRY ThreadListEntry;
+  HANDLE ThreadId;
+} THREAD_INFO, *PTHREAD_INFO;
+
+typedef struct _PROCESS_INFO {
+  LIST_ENTRY ProcessListEntry;
+  HANDLE pid;
+  LIST_ENTRY ThreadListHead;
+} PROCESS_INFO, *PPROCESS_INFO;
+
+// global list head to track all processes
 static LIST_ENTRY ProcessListHead;
 
 // Declarations
@@ -107,7 +119,7 @@ BOOLEAN RemoveProcessFromList(HANDLE pid) {
     RemoveEntryList(&pProcInfo->ProcessListEntry);
     ExFreePoolWithTag(pProcInfo, DRIVER_POOL_TAG);
 
-    DbgPrintPrefix("[-] Process removed pid %llu", (ULONG_PTR)pid);
+    //DbgPrintPrefix("[-] Process removed pid %llu", (ULONG_PTR)pid);
     return TRUE;
   }
 
@@ -121,7 +133,7 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
     RemoveEntryList(&pThreadInfo->ThreadListEntry);
     ExFreePoolWithTag(pThreadInfo, DRIVER_POOL_TAG);
 
-    DbgPrintPrefix("  [-] Thread removed tid (%llu) from pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid, TotalThreadsInProcess(pid));
+    //DbgPrintPrefix("  [-] Thread removed tid (%llu) from pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid, TotalThreadsInProcess(pid));
     return TRUE;
   }
 
@@ -138,7 +150,7 @@ BOOLEAN AddProcessToList(HANDLE pid) {
 
       InitializeListHead(&pProcInfo->ThreadListHead);
 
-      DbgPrintPrefix("[+] Process added pid %llu", (ULONG_PTR)pid);
+      //DbgPrintPrefix("[+] Process added pid %llu", (ULONG_PTR)pid);
       return TRUE;
     }
   }
@@ -157,8 +169,8 @@ BOOLEAN AddThreadToProcess(HANDLE pid, HANDLE tid) {
         pThreadInfo->ThreadId = tid;
 
         InsertHeadList(&pProcInfo->ThreadListHead, &pThreadInfo->ThreadListEntry);
-        DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
-                       TotalThreadsInProcess(pid));
+        //DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
+        //               TotalThreadsInProcess(pid));
 
         return TRUE;
       }

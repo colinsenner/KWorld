@@ -1,17 +1,6 @@
 #pragma once
 #include <ntddk.h>
 
-typedef struct _THREAD_INFO {
-  LIST_ENTRY ThreadListEntry;
-  HANDLE ThreadId;
-} THREAD_INFO, *PTHREAD_INFO;
-
-typedef struct _PROCESS_INFO {
-  LIST_ENTRY ProcessListEntry;
-  HANDLE pid;
-  LIST_ENTRY ThreadListHead;
-} PROCESS_INFO, *PPROCESS_INFO;
-
 // Call before any other functions
 void InitializeProcessList();
 
