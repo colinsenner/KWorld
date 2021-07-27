@@ -28,6 +28,14 @@ void sCreateThreadNotifyRoutine(HANDLE pid, HANDLE tid, BOOLEAN create) {
   UNREFERENCED_PARAMETER(tid);
   UNREFERENCED_PARAMETER(create);
 
+  if (create) {
+    //if (!IsThreadInProcess(pid, tid)) {
+      //AddThreadToProcess(pid, tid);
+    //}
+  }
+  else {
+
+  }
 }
 
 void DriverUnload(PDRIVER_OBJECT DriverObject) {
