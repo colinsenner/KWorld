@@ -15,9 +15,7 @@ void sCreateProcessNotifyRoutine(HANDLE ppid, HANDLE pid, BOOLEAN create) {
   UNREFERENCED_PARAMETER(ppid);
 
   if (create) {
-    if (!IsProcessInList(pid)) {
-      AddProcessToList(pid);
-    }
+    AddProcessToList(pid);
   } else {
     RemoveProcessFromList(pid);
   }
@@ -29,12 +27,10 @@ void sCreateThreadNotifyRoutine(HANDLE pid, HANDLE tid, BOOLEAN create) {
   UNREFERENCED_PARAMETER(create);
 
   if (create) {
-    //if (!IsThreadInProcess(pid, tid)) {
-      //AddThreadToProcess(pid, tid);
-    //}
+    AddThreadToProcess(pid, tid);
   }
   else {
-
+    RemoveThreadFromProcess(pid, tid);
   }
 }
 
