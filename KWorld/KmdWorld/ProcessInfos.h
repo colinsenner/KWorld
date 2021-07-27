@@ -22,3 +22,6 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid);
 
 // Frees the entire tracked process list including all tracked threads.
 void FreeProcessList();
+
+BOOLEAN IsProcessInList(HANDLE pid);
+BOOLEAN IsThreadInProcess(HANDLE tid, HANDLE pid);

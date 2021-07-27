@@ -43,7 +43,7 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
   PsSetCreateProcessNotifyRoutine(sCreateProcessNotifyRoutine, TRUE);
   PsRemoveCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
 
-  // Free memory ...
+  // Free memory
   FreeProcessList();
 }
 
@@ -51,6 +51,15 @@ NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
   UNREFERENCED_PARAMETER(pid);
 
   NTSTATUS status = STATUS_SUCCESS;
+
+  if (IsProcessInList((HANDLE)pid)) {
+
+  } else {
+    DbgPrintPrefix(
+        "Couldn't find pid (%llu) in the process list, make sure the driver is running before the process is launched.",
+        (ULONG_PTR)pid);
+    status = STATUS_NOT_FOUND;
+  }
 
   // PEPROCESS pProcess = NULL;
 
