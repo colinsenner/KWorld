@@ -9,3 +9,9 @@ typedef struct _PROCESS_INFO {
   LIST_ENTRY ListEntry;
   HANDLE pid;
 } PROCESS_INFO, *PPROCESS_INFO;
+
+void InitializeProcessList();
+void AddProcessToList(HANDLE pid);
+BOOLEAN RemoveProcessFromList(HANDLE pid);
+BOOLEAN IsProcessInList(HANDLE pid);
+BOOLEAN FreeProcessList();

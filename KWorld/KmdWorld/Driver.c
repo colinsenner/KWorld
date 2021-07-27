@@ -10,82 +10,16 @@ DRIVER_INITIALIZE DriverEntry;
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
 
-LIST_ENTRY ProcessListHead;
-
-BOOLEAN RemoveProcessFromList(PLIST_ENTRY ListHead, HANDLE pid) {
-//  PLIST_ENTRY pEntry = ListHead->Flink;
-
-  //while (pEntry->Flink != ListHead) {
-  //  PROCESS_INFO* procInfo = CONTAINING_RECORD(pEntry, PROCESS_INFO, ListEntry);
-
-  //  if (procInfo->pid == pid) {
-  //    LIST_ENTRY tmp;
-  //    tmp.Flink = pEntry->Flink;
-  //    tmp.Blink = pEntry->Blink;
-
-  //    DbgPrintPrefix("    %llu removed from process list\n", (ULONG_PTR)procInfo->pid);
-  //    ExFreePoolWithTag(procInfo, DRIVER_POOL_TAG);
-  //    RemoveEntryList(pEntry);
-
-  //    pEntry = &tmp;
-  //  }
-
-  //  pEntry = pEntry->Flink;
-  //}
-
-  PLIST_ENTRY pLink = NULL;
-
-  for (pLink = ListHead->Flink; pLink != (PLIST_ENTRY)&ListHead->Flink; pLink = pLink->Flink) {
-    PPROCESS_INFO pProcInfo = CONTAINING_RECORD(pLink, PROCESS_INFO, ListEntry);
-
-    if (pProcInfo->pid == pid) {
-      DbgPrintPrefix("    %llu removed from process list\n", (ULONG_PTR)pProcInfo->pid);
-      ExFreePoolWithTag(pProcInfo, DRIVER_POOL_TAG);
-
-      RemoveEntryList(pLink);
-    }
-  }
-
-  return TRUE;
-}
-
-BOOLEAN IsProcessInList(PLIST_ENTRY ListHead, HANDLE pid) {
-  PLIST_ENTRY pEntry = ListHead->Flink;
-
-  while (pEntry && pEntry != ListHead) {
-    PROCESS_INFO* procInfo = (PROCESS_INFO*)CONTAINING_RECORD(pEntry, PROCESS_INFO, ListEntry);
-
-    if (procInfo->pid == pid) {
-      return TRUE;
-    }
-
-    pEntry = pEntry->Flink;
-  }
-
-  return FALSE;
-}
-
-void AddProcessToList(PLIST_ENTRY ListHead, HANDLE pid) {
-  PPROCESS_INFO pProcInfo;
-  pProcInfo = (PPROCESS_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_INFO), DRIVER_POOL_TAG);
-
-  if (pProcInfo) {
-    pProcInfo->pid = pid;
-    InsertHeadList(ListHead, &pProcInfo->ListEntry);
-
-    DbgPrintPrefix("Process id %llu added to process list (%p)", (ULONG_PTR)pid, ListHead);
-  }
-}
 
 void sCreateProcessNotifyRoutine(HANDLE ppid, HANDLE pid, BOOLEAN create) {
   UNREFERENCED_PARAMETER(ppid);
 
   if (create) {
-    if (!IsProcessInList(&ProcessListHead, pid)) {
-      AddProcessToList(&ProcessListHead, pid);
+    if (!IsProcessInList(pid)) {
+      AddProcessToList(pid);
     }
   } else {
-    RemoveProcessFromList(&ProcessListHead, pid);
+    RemoveProcessFromList(pid);
   }
 }
 
@@ -106,6 +40,7 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
   PsRemoveCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
 
   // Free memory ...
+  FreeProcessList();
 }
 
 NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
@@ -228,8 +163,8 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
   DriverObject->MajorFunction[IRP_MJ_CREATE] = HandleIrpCreateClose;
   DriverObject->MajorFunction[IRP_MJ_CLOSE] = HandleIrpCreateClose;
 
-  // Used to track processes
-  InitializeListHead(&ProcessListHead);
+  // Used to track processes and their threads
+  InitializeProcessList();
 
   DbgPrintPrefix("Driver loaded");
 
