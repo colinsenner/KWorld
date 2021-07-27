@@ -6,7 +6,7 @@
 
 typedef struct _THREAD_INFO {
   LIST_ENTRY ThreadListEntry;
-  HANDLE ThreadId;
+  HANDLE tid;
 } THREAD_INFO, *PTHREAD_INFO;
 
 typedef struct _PROCESS_INFO {
@@ -17,10 +17,6 @@ typedef struct _PROCESS_INFO {
 
 // global list head to track all processes
 static LIST_ENTRY ProcessListHead;
-
-// Declarations
-static BOOLEAN IsProcessInList(HANDLE pid);
-static BOOLEAN IsThreadInProcess(HANDLE tid, HANDLE pid);
 
 void InitializeProcessList() {
   InitializeListHead(&ProcessListHead);
@@ -49,7 +45,7 @@ static PTHREAD_INFO GetThreadEntryByTid(PPROCESS_INFO pProc, HANDLE tid) {
     while (pThreadEntry != &pProc->ThreadListHead) {
       PTHREAD_INFO pThreadInfo = CONTAINING_RECORD(pThreadEntry, THREAD_INFO, ThreadListEntry);
 
-      if (pThreadInfo->ThreadId == tid) {
+      if (pThreadInfo->tid == tid) {
         return pThreadInfo;
       }
 
@@ -166,7 +162,7 @@ BOOLEAN AddThreadToProcess(HANDLE pid, HANDLE tid) {
       PTHREAD_INFO pThreadInfo = (PTHREAD_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(THREAD_INFO), DRIVER_POOL_TAG);
 
       if (pThreadInfo) {
-        pThreadInfo->ThreadId = tid;
+        pThreadInfo->tid = tid;
 
         InsertHeadList(&pProcInfo->ThreadListHead, &pThreadInfo->ThreadListEntry);
         //DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
@@ -180,10 +176,10 @@ BOOLEAN AddThreadToProcess(HANDLE pid, HANDLE tid) {
   return FALSE;
 }
 
-static BOOLEAN IsProcessInList(HANDLE pid) {
+BOOLEAN IsProcessInList(HANDLE pid) {
   return GetProcessEntryByPid(pid) != NULL;
 }
 
-static BOOLEAN IsThreadInProcess(HANDLE tid, HANDLE pid) {
+BOOLEAN IsThreadInProcess(HANDLE tid, HANDLE pid) {
   return GetThreadEntryByTid(GetProcessEntryByPid(pid), tid) != NULL;
 }
