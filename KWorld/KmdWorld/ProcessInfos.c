@@ -22,7 +22,7 @@ void InitializeProcessList() {
   InitializeListHead(&ProcessListHead);
 }
 
-static PPROCESS_INFO GetProcessEntryByPid(HANDLE pid) {
+PPROCESS_INFO GetProcessEntryByPid(HANDLE pid) {
   PLIST_ENTRY pEntry = ProcessListHead.Flink;
 
   while (pEntry != &ProcessListHead) {
@@ -32,31 +32,37 @@ static PPROCESS_INFO GetProcessEntryByPid(HANDLE pid) {
       return pProcInfo;
     }
 
+
     pEntry = pEntry->Flink;
   }
 
   return NULL;
 }
 
-static PTHREAD_INFO GetThreadEntryByTid(PPROCESS_INFO pProc, HANDLE tid) {
-  if (pProc) {
-    PLIST_ENTRY pThreadEntry = pProc->ThreadListHead.Flink;
+PTHREAD_INFO GetThreadEntryByTid(PPROCESS_INFO pProc, HANDLE tid) {
+  if (pProc != NULL) {
+    PLIST_ENTRY pEntry = pProc->ThreadListHead.Flink;
 
-    while (pThreadEntry != &pProc->ThreadListHead) {
-      PTHREAD_INFO pThreadInfo = CONTAINING_RECORD(pThreadEntry, THREAD_INFO, ThreadListEntry);
+    while (pEntry != &pProc->ThreadListHead) {
+      PTHREAD_INFO pThreadInfo = CONTAINING_RECORD(pEntry, THREAD_INFO, ThreadListEntry);
+
+      if (pThreadInfo == NULL) {
+        DbgPrintPrefix("this should be impossible?");
+        return NULL;
+      }
 
       if (pThreadInfo->tid == tid) {
         return pThreadInfo;
       }
 
-      pThreadEntry = pThreadEntry->Flink;
+      pEntry = pEntry->Flink;
     }
   }
 
   return NULL;
 }
 
-static int TotalThreadsInProcess(HANDLE pid) {
+int TotalThreadsInProcess(HANDLE pid) {
   PPROCESS_INFO pProcInfo = GetProcessEntryByPid(pid);
   int result = 0;
 
@@ -72,14 +78,14 @@ static int TotalThreadsInProcess(HANDLE pid) {
   return result;
 }
 
-static BOOLEAN FreeThreadList(PPROCESS_INFO pProc) {
+BOOLEAN FreeThreadList(PPROCESS_INFO pProc) {
   if (pProc) {
     PLIST_ENTRY pThreadEntry = pProc->ThreadListHead.Flink;
 
     while (pThreadEntry != &pProc->ThreadListHead) {
       PTHREAD_INFO pThreadInfo = CONTAINING_RECORD(pThreadEntry, THREAD_INFO, ThreadListEntry);
 
-      //DbgPrintPrefix("  [-] Freed thread entry tid (%llu)", (ULONG_PTR)pThreadInfo->ThreadId);
+      DbgPrintPrefix("  [-] Freed thread entry tid (%llu)", (ULONG_PTR)pThreadInfo->tid);
 
       RemoveEntryList(pThreadEntry);
       ExFreePoolWithTag(pThreadInfo, DRIVER_POOL_TAG);
@@ -111,7 +117,7 @@ void FreeProcessList() {
 BOOLEAN RemoveProcessFromList(HANDLE pid) {
   PPROCESS_INFO pProcInfo = GetProcessEntryByPid(pid);
 
-  if (pProcInfo) {
+  if (pProcInfo != NULL) {
     RemoveEntryList(&pProcInfo->ProcessListEntry);
     ExFreePoolWithTag(pProcInfo, DRIVER_POOL_TAG);
 
@@ -125,11 +131,11 @@ BOOLEAN RemoveProcessFromList(HANDLE pid) {
 BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
   PTHREAD_INFO pThreadInfo = GetThreadEntryByTid(GetProcessEntryByPid(pid), tid);
 
-  if (pThreadInfo) {
+  if (pThreadInfo != NULL) {
     RemoveEntryList(&pThreadInfo->ThreadListEntry);
     ExFreePoolWithTag(pThreadInfo, DRIVER_POOL_TAG);
 
-    //DbgPrintPrefix("  [-] Thread removed tid (%llu) from pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid, TotalThreadsInProcess(pid));
+    DbgPrintPrefix("  [-] Thread removed tid (%llu) from pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid, TotalThreadsInProcess(pid));
     return TRUE;
   }
 
@@ -146,7 +152,7 @@ BOOLEAN AddProcessToList(HANDLE pid) {
 
       InitializeListHead(&pProcInfo->ThreadListHead);
 
-      //DbgPrintPrefix("[+] Process added pid %llu", (ULONG_PTR)pid);
+      DbgPrintPrefix("[+] Process added pid %llu", (ULONG_PTR)pid);
       return TRUE;
     }
   }
@@ -155,18 +161,18 @@ BOOLEAN AddProcessToList(HANDLE pid) {
 }
 
 BOOLEAN AddThreadToProcess(HANDLE pid, HANDLE tid) {
-  PPROCESS_INFO pProcInfo = GetProcessEntryByPid(pid);
+  PPROCESS_INFO pProc = GetProcessEntryByPid(pid);
 
-  if (pProcInfo) {
+  if (pProc != NULL) {
     if (!IsThreadInProcess(tid, pid)) {
       PTHREAD_INFO pThreadInfo = (PTHREAD_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(THREAD_INFO), DRIVER_POOL_TAG);
 
       if (pThreadInfo) {
         pThreadInfo->tid = tid;
 
-        InsertHeadList(&pProcInfo->ThreadListHead, &pThreadInfo->ThreadListEntry);
-        //DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
-        //               TotalThreadsInProcess(pid));
+        InsertHeadList(&pProc->ThreadListHead, &pThreadInfo->ThreadListEntry);
+        DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
+                       TotalThreadsInProcess(pid));
 
         return TRUE;
       }
