@@ -7,45 +7,36 @@
 
 static LIST_ENTRY ProcessListHead{&ProcessListHead, &ProcessListHead};
 
-void AddProcess(HANDLE pid) {
+PPROCESS_INFO AddProcess(HANDLE pid) {
   if (ProcessListHead.Flink == NULL || ProcessListHead.Blink == NULL) {
     DbgPrintPrefix("[!] List head not initialized!");
-    return;
+    return NULL;
   }
 
   PPROCESS_INFO pProc = (PPROCESS_INFO)malloc(sizeof(PROCESS_INFO));
 
   if (!pProc) {
     DbgPrintPrefix("[!] Problem allocating PROCESS_INFO.");
-    return;
+    return NULL;
   }
   pProc->pid = pid;
 
   DbgPrintPrefix("[+] Tracking process %llu", (ULONG_PTR)pid);
 
   InsertHeadList(&ProcessListHead, &pProc->ProcessListEntry);
+
+  return pProc;
 }
 
-BOOLEAN RemoveProcess(HANDLE pid) {
+BOOLEAN RemoveProcess(PPROCESS_INFO pProc) {
   if (IsListEmpty(&ProcessListHead)) {
-    return FALSE;
+    return NULL;
   }
 
-  PLIST_ENTRY pEntry = ProcessListHead.Flink;
+  RemoveEntryList(&pProc->ProcessListEntry);
 
-  while (pEntry != &ProcessListHead) {
-    PPROCESS_INFO pProc = CONTAINING_RECORD(pEntry, PROCESS_INFO, ProcessListEntry);
-
-    if (pProc->pid == pid) {
-      RemoveEntryList(pEntry);
-
-      printf("[-] Removing process pid: %llu\n", (ULONG_PTR)pProc->pid);
-      free(pProc);
-      return TRUE;
-    }
-
-    pEntry = pEntry->Flink;
-  }
+  printf("[-] Removing process pid: %llu\n", (ULONG_PTR)pProc->pid);
+  free(pProc);
 
   return FALSE;
 }
@@ -58,16 +49,10 @@ void FreeTrackedProcesses() {
   PLIST_ENTRY pEntry = ProcessListHead.Flink;
 
   while (!IsListEmpty(&ProcessListHead)) {
-    //pEntry = RemoveHeadList(&ProcessListHead);
-
     PPROCESS_INFO pProc = CONTAINING_RECORD(pEntry, PROCESS_INFO, ProcessListEntry);
 
-    //printf("[-] Removing process pid: %llu\n", (ULONG_PTR)pProc->pid);
-
-    //free(pProc);
-
-    RemoveProcess(pProc->pid);
-
     pEntry = pEntry->Flink;
+
+    RemoveProcess(pProc);
   }
 }

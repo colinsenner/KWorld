@@ -7,11 +7,11 @@
 int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-  AddProcess((HANDLE)1);
-  AddProcess((HANDLE)2);
-  AddProcess((HANDLE)3);
+  auto proc1 = AddProcess((HANDLE)1);
+  auto proc2 = AddProcess((HANDLE)2);
+  auto proc3 = AddProcess((HANDLE)3);
 
-  RemoveProcess((HANDLE)2);
+  RemoveProcess(proc2);
 
   FreeTrackedProcesses();
 

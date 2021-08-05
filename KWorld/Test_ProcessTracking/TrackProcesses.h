@@ -16,7 +16,7 @@ typedef struct _PROCESS_INFO {
   LIST_ENTRY ThreadListHead;
 } PROCESS_INFO, *PPROCESS_INFO;
 
-void AddProcess(HANDLE pid);
-BOOLEAN RemoveProcess(HANDLE pid);
+PPROCESS_INFO AddProcess(HANDLE pid);
+BOOLEAN RemoveProcess(PPROCESS_INFO pProc);
 
 void FreeTrackedProcesses();
