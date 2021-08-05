@@ -3,7 +3,7 @@
 #include <wdf.h>
 
 #include "..\Common\DriverCommon.h"
-#include "ProcessInfos.h"
+#include "TrackProcesses.h"
 
 DRIVER_INITIALIZE DriverEntry;
 
@@ -15,9 +15,9 @@ void sCreateProcessNotifyRoutine(HANDLE ppid, HANDLE pid, BOOLEAN create) {
   UNREFERENCED_PARAMETER(ppid);
 
   if (create) {
-    AddProcessToList(pid);
+    AddProcess(pid);
   } else {
-    RemoveProcessFromList(pid);
+    RemoveProcess(pid);
   }
 }
 
@@ -44,7 +44,7 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
   PsRemoveCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
 
   // Free memory
-  FreeProcessList();
+  FreeTrackedProcesses();
 }
 
 NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
@@ -52,7 +52,7 @@ NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
 
   NTSTATUS status = STATUS_SUCCESS;
 
-  if (IsProcessInList((HANDLE)pid)) {
+  if (IsProcessTracked((HANDLE)pid)) {
 
   } else {
     DbgPrintPrefix(
@@ -177,7 +177,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
   DriverObject->MajorFunction[IRP_MJ_CLOSE] = HandleIrpCreateClose;
 
   // Used to track processes and their threads
-  InitializeProcessList();
+  InitializeTrackedProcesses();
 
   DbgPrintPrefix("Driver loaded");
 

@@ -4,7 +4,11 @@
 
 // https://www.osronline.com/article.cfm%5Earticle=499.htm
 
-static LIST_ENTRY ProcessListHead{&ProcessListHead, &ProcessListHead};
+static LIST_ENTRY ProcessListHead;
+
+void InitializeTrackedProcesses() {
+  InitializeListHead(&ProcessListHead);
+}
 
 PPROCESS_INFO AddProcess(HANDLE pid) {
   if (ProcessListHead.Flink == NULL || ProcessListHead.Blink == NULL) {
@@ -91,7 +95,7 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
     PTHREAD_INFO pThread = CONTAINING_RECORD(pEntry, THREAD_INFO, ThreadEntry);
 
     if (pThread->tid == tid) {
-      DbgPrintPrefix("  [+] Removing thread %llu from process %llu", (ULONG_PTR)tid, (ULONG_PTR)pid);
+      DbgPrintPrefix("  [-] Removing thread %llu from process %llu", (ULONG_PTR)tid, (ULONG_PTR)pid);
 
       RemoveEntryList(&pThread->ThreadEntry);
       free(pThread);
@@ -174,6 +178,19 @@ void FreeTrackedProcesses() {
       return;
     }
   }
+}
+
+BOOLEAN IsProcessTracked(HANDLE pid) {
+  PLIST_ENTRY pEntry = ProcessListHead.Flink;
+  while (pEntry != &ProcessListHead) {
+    PPROCESS_INFO pProc = CONTAINING_RECORD(pEntry, PROCESS_INFO, ProcessEntry);
+
+    if (pProc->pid == pid)
+      return TRUE;
+
+    pEntry = pEntry->Flink;
+  }
+  return FALSE;
 }
 
 static void PrintThreadList(PLIST_ENTRY head) {

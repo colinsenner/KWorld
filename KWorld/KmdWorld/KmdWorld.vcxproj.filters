@@ -27,7 +27,7 @@
     <ClCompile Include="Driver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessInfos.c">
+    <ClCompile Include="TrackProcesses.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClInclude Include="..\Common\DriverCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessInfos.h">
+    <ClInclude Include="TrackProcesses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

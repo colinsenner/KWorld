@@ -3,26 +3,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "TrackProcesses.h"
+#include <time.h>
+
+#define RAND_RANGE(minimum, maximum) (minimum + (rand() % (maximum - minimum + 1)))
 
 int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-  auto non_existant_process = AddThreadToProcess((HANDLE)9, (HANDLE)901);
+  srand(time(NULL));
 
-  auto p1 = AddProcess((HANDLE)1);
-  auto th1 = AddThreadToProcess((HANDLE)1, (HANDLE)101);
-  auto th2 = AddThreadToProcess((HANDLE)1, (HANDLE)102);
-  auto th3 = AddThreadToProcess((HANDLE)1, (HANDLE)103);
+  InitializeTrackedProcesses();
 
-  PrintProcessList();
+  for (size_t i = 0; i < 50; i++) {
+    int pid = RAND_RANGE(1, 50);
 
-  RemoveThreadFromProcess((HANDLE)1, (HANDLE)102);
+    bool addProcess = RAND_RANGE(1, 2) == 1;
+    if (addProcess) {
+      AddProcess((HANDLE)pid);
+    } else {
+      RemoveProcess((HANDLE)pid);
+    }
 
-  PrintProcessList();
+    bool addThread = RAND_RANGE(1, 2) == 1;
+    if (addThread) {
+      for (size_t tid = 0; tid < RAND_RANGE(1, 9); tid++) {
+        AddThreadToProcess((HANDLE)pid, (HANDLE)tid);
+      }
+    } else {
+      for (size_t tid = 0; tid < RAND_RANGE(1, 9); tid++) {
+        RemoveThreadFromProcess((HANDLE)pid, (HANDLE)tid);
+      }
+    }
+  }
 
   FreeTrackedProcesses();
 
-  PrintProcessList();
+  //auto non_existant_process = AddThreadToProcess((HANDLE)9, (HANDLE)901);
+
+  //auto p1 = AddProcess((HANDLE)1);
+  //auto th1 = AddThreadToProcess((HANDLE)1, (HANDLE)101);
+  //auto th2 = AddThreadToProcess((HANDLE)1, (HANDLE)102);
+  //auto th3 = AddThreadToProcess((HANDLE)1, (HANDLE)103);
+
+  //printf("Is process 1 tracked: %d\n", IsProcessTracked((HANDLE)1));
+  //printf("Is process 9 tracked: %d\n", IsProcessTracked((HANDLE)9));
+
+  //PrintProcessList();
+
+  //RemoveThreadFromProcess((HANDLE)1, (HANDLE)102);
+
+  //PrintProcessList();
+
+
+
+  //PrintProcessList();
 
   return 0;
 }
