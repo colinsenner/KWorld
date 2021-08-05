@@ -5,12 +5,12 @@
 #include "..\Common\DriverCommon.h"
 
 typedef struct _THREAD_INFO {
-  LIST_ENTRY ThreadListEntry;
+  LIST_ENTRY ThreadEntry;
   HANDLE tid;
 } THREAD_INFO, *PTHREAD_INFO;
 
 typedef struct _PROCESS_INFO {
-  LIST_ENTRY ProcessListEntry;
+  LIST_ENTRY ProcessEntry;
   HANDLE pid;
   LIST_ENTRY ThreadListHead;
 } PROCESS_INFO, *PPROCESS_INFO;
@@ -118,7 +118,7 @@ BOOLEAN RemoveProcessFromList(HANDLE pid) {
   PPROCESS_INFO pProcInfo = GetProcessEntryByPid(pid);
 
   if (pProcInfo != NULL) {
-    RemoveEntryList(&pProcInfo->ProcessListEntry);
+    RemoveEntryList(&pProcInfo->ProcessEntry);
     ExFreePoolWithTag(pProcInfo, DRIVER_POOL_TAG);
 
     //DbgPrintPrefix("[-] Process removed pid %llu", (ULONG_PTR)pid);
@@ -132,7 +132,7 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
   PTHREAD_INFO pThreadInfo = GetThreadEntryByTid(GetProcessEntryByPid(pid), tid);
 
   if (pThreadInfo != NULL) {
-    RemoveEntryList(&pThreadInfo->ThreadListEntry);
+    RemoveEntryList(&pThreadInfo->ThreadEntry);
     ExFreePoolWithTag(pThreadInfo, DRIVER_POOL_TAG);
 
     DbgPrintPrefix("  [-] Thread removed tid (%llu) from pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid, TotalThreadsInProcess(pid));
@@ -148,7 +148,7 @@ BOOLEAN AddProcessToList(HANDLE pid) {
 
     if (pProcInfo) {
       pProcInfo->pid = pid;
-      InsertHeadList(&ProcessListHead, &pProcInfo->ProcessListEntry);
+      InsertHeadList(&ProcessListHead, &pProcInfo->ProcessEntry);
 
       InitializeListHead(&pProcInfo->ThreadListHead);
 
@@ -170,7 +170,7 @@ BOOLEAN AddThreadToProcess(HANDLE pid, HANDLE tid) {
       if (pThreadInfo) {
         pThreadInfo->tid = tid;
 
-        InsertHeadList(&pProc->ThreadListHead, &pThreadInfo->ThreadListEntry);
+        InsertHeadList(&pProc->ThreadListHead, &pThreadInfo->ThreadEntry);
         DbgPrintPrefix("  [+] Thread added tid (%llu) to pid (%llu) (total: %d)", (ULONG_PTR)tid, (ULONG_PTR)pid,
                        TotalThreadsInProcess(pid));
 

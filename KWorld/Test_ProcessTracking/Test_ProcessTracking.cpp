@@ -11,9 +11,15 @@ int main() {
   auto proc2 = AddProcess((HANDLE)2);
   auto proc3 = AddProcess((HANDLE)3);
 
-  RemoveProcess(proc2);
+  PrintProcessList();
+
+  RemoveProcess((HANDLE)2);
+
+  PrintProcessList();
 
   FreeTrackedProcesses();
+
+  PrintProcessList();
 
   return 0;
 }
