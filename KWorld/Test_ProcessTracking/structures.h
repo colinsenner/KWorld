@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 #define DbgPrintPrefix(s, ...) printf(s "\n", __VA_ARGS__)
+#define ExAllocatePoolWithTag(unused1, o, unused2) malloc(o)
+
+#define ExFreePoolWithTag(obj, unused) free(obj)
 
 FORCEINLINE VOID InitializeListHead(_Out_ PLIST_ENTRY ListHead)
 {

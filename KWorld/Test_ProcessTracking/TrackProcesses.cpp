@@ -1,7 +1,5 @@
 #include "TrackProcesses.h"
 
-#include <stdio.h>
-
 // https://www.osronline.com/article.cfm%5Earticle=499.htm
 
 static LIST_ENTRY ProcessListHead;
@@ -17,7 +15,7 @@ PPROCESS_INFO AddProcess(HANDLE pid) {
   }
 
   // Create the process_info object
-  PPROCESS_INFO pProc = (PPROCESS_INFO)malloc(sizeof(PROCESS_INFO));
+  PPROCESS_INFO pProc = (PPROCESS_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_INFO), DRIVER_POOL_TAG);
 
   if (!pProc) {
     DbgPrintPrefix("[!] Problem allocating PROCESS_INFO.");
@@ -65,7 +63,7 @@ PTHREAD_INFO AddThreadToProcess(HANDLE pid, HANDLE tid) {
   }
 
   // Create the thread info object
-  PTHREAD_INFO pThread = (PTHREAD_INFO)malloc(sizeof(THREAD_INFO));
+  PTHREAD_INFO pThread = (PTHREAD_INFO)ExAllocatePoolWithTag(PagedPool, sizeof(THREAD_INFO), DRIVER_POOL_TAG);
 
   if (!pThread) {
     DbgPrintPrefix("[!] Problem allocating THREAD_INFO.");
@@ -75,7 +73,7 @@ PTHREAD_INFO AddThreadToProcess(HANDLE pid, HANDLE tid) {
   // Set members
   pThread->tid = tid;
 
-  DbgPrintPrefix("  [+] Add thread %llu to process %llu", (ULONG_PTR)tid, (ULONG_PTR) pid);
+  DbgPrintPrefix("  [+] Add thread %llu to process %llu", (ULONG_PTR)tid, (ULONG_PTR)pid);
 
   InsertHeadList(&pProc->ThreadListHead, &pThread->ThreadEntry);
 
@@ -86,7 +84,7 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
   PPROCESS_INFO pProc = FindProcess(pid);
 
   if (!pProc) {
-    return NULL;
+    return FALSE;
   }
 
   PLIST_ENTRY pEntry = pProc->ThreadListHead.Flink;
@@ -98,7 +96,7 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
       DbgPrintPrefix("  [-] Removing thread %llu from process %llu", (ULONG_PTR)tid, (ULONG_PTR)pid);
 
       RemoveEntryList(&pThread->ThreadEntry);
-      free(pThread);
+      ExFreePoolWithTag(pThread, DRIVER_POOL_TAG);
 
       return TRUE;
     }
@@ -133,7 +131,7 @@ static void FreeThreadsFromProcess(PPROCESS_INFO pProc) {
 
 BOOLEAN RemoveProcess(HANDLE pid) {
   if (IsListEmpty(&ProcessListHead)) {
-    return NULL;
+    return FALSE;
   }
 
   PLIST_ENTRY pEntry = ProcessListHead.Flink;
@@ -147,7 +145,7 @@ BOOLEAN RemoveProcess(HANDLE pid) {
       FreeThreadsFromProcess(pProc);
 
       RemoveEntryList(&pProc->ProcessEntry);
-      free(pProc);
+      ExFreePoolWithTag(pProc, DRIVER_POOL_TAG);
 
       return TRUE;
     }
