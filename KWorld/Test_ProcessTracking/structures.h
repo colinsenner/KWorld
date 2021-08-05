@@ -19,11 +19,6 @@ FORCEINLINE VOID InsertHeadList(_Inout_ PLIST_ENTRY ListHead, _Out_ PLIST_ENTRY 
 
   NextEntry = ListHead->Flink;
 
-  if (NextEntry->Blink != ListHead) {
-    printf("!!!FATAL LIST ERROR!!!\n");
-    return;
-  }
-
   Entry->Flink = NextEntry;
   Entry->Blink = ListHead;
   NextEntry->Blink = Entry;

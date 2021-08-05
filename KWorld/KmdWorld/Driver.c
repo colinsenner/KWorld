@@ -21,11 +21,7 @@ void sCreateProcessNotifyRoutine(HANDLE ppid, HANDLE pid, BOOLEAN create) {
   }
 }
 
-void sCreateThreadNotifyRoutine(HANDLE pid, HANDLE tid, BOOLEAN create) {
-  UNREFERENCED_PARAMETER(pid);
-  UNREFERENCED_PARAMETER(tid);
-  UNREFERENCED_PARAMETER(create);
-
+VOID sCreateThreadNotifyRoutine(HANDLE pid, HANDLE tid, BOOLEAN create) {
   if (create) {
     AddThreadToProcess(pid, tid);
   }
@@ -184,13 +180,14 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
   // Subscribe to notifications
   status = PsSetCreateProcessNotifyRoutine(sCreateProcessNotifyRoutine, FALSE);
   if (!NT_SUCCESS(status)) {
-    DbgPrintPrefix("Could not subscribe to process notify routine");
+    DbgPrintPrefix("Could not subscribe to process notify routine: 0x%X", status);
     return status;
   }
 
-  status = PsSetCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
+  //status = PsSetCreateThreadNotifyRoutine(sCreateThreadNotifyRoutine);
+  status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifyNonSystem, sCreateThreadNotifyRoutine);
   if (!NT_SUCCESS(status)) {
-    DbgPrintPrefix("Could not subscribe to thread notify routine");
+    DbgPrintPrefix("Could not subscribe to thread notify routine: 0x%X", status);
     return status;
   }
 

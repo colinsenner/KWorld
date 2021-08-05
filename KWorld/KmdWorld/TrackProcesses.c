@@ -93,6 +93,8 @@ BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid) {
 
   PLIST_ENTRY pEntry = pProc->ThreadListHead.Flink;
 
+  DbgPrintPrefix("Running on thread: %llu", (ULONG_PTR)PsGetCurrentThreadId());
+
   while (pEntry != &pProc->ThreadListHead) {
     PTHREAD_INFO pThread = CONTAINING_RECORD(pEntry, THREAD_INFO, ThreadEntry);
 

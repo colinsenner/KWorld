@@ -5,17 +5,17 @@
 #include "TrackProcesses.h"
 #include <time.h>
 
-#define RAND_RANGE(minimum, maximum) (minimum + (rand() % (maximum - minimum + 1)))
+#define RAND_RANGE(minimum, maximum) ((size_t)minimum + ((size_t)rand() % ((size_t)maximum - (size_t)minimum + 1)))
 
 int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-  srand(time(NULL));
+  srand((unsigned int)time(NULL));
 
   InitializeTrackedProcesses();
 
   for (size_t i = 0; i < 50; i++) {
-    int pid = RAND_RANGE(1, 50);
+    size_t pid = (size_t)RAND_RANGE(1, 50);
 
     bool addProcess = RAND_RANGE(1, 2) == 1;
     if (addProcess) {
@@ -24,16 +24,16 @@ int main() {
       RemoveProcess((HANDLE)pid);
     }
 
-    bool addThread = RAND_RANGE(1, 2) == 1;
-    if (addThread) {
-      for (size_t tid = 0; tid < RAND_RANGE(1, 9); tid++) {
-        AddThreadToProcess((HANDLE)pid, (HANDLE)tid);
-      }
-    } else {
-      for (size_t tid = 0; tid < RAND_RANGE(1, 9); tid++) {
-        RemoveThreadFromProcess((HANDLE)pid, (HANDLE)tid);
-      }
-    }
+    //bool addThread = RAND_RANGE(1, 2) == 1;
+    //if (addThread) {
+    //  for (size_t tid = 0; tid < RAND_RANGE(1, 9); tid++) {
+    //    AddThreadToProcess((HANDLE)pid, (HANDLE)tid);
+    //  }
+    //} else {
+    //  for (size_t tid = 0; tid < (size_t)RAND_RANGE(1, 9); tid++) {
+    //    RemoveThreadFromProcess((HANDLE)pid, (HANDLE)tid);
+    //  }
+    //}
   }
 
   FreeTrackedProcesses();
