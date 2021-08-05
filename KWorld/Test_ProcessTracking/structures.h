@@ -2,6 +2,14 @@
 #include <Windows.h>
 #include <stdio.h>
 
+#define DbgPrintPrefix(s, ...) printf(s "\n", __VA_ARGS__)
+
+FORCEINLINE VOID InitializeListHead(_Out_ PLIST_ENTRY ListHead)
+{
+  ListHead->Flink = ListHead->Blink = ListHead;
+  return;
+}
+
 FORCEINLINE VOID InsertHeadList(_Inout_ PLIST_ENTRY ListHead, _Out_ PLIST_ENTRY Entry)
 {
   PLIST_ENTRY NextEntry;

@@ -7,13 +7,16 @@
 int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-  auto proc1 = AddProcess((HANDLE)1);
-  auto proc2 = AddProcess((HANDLE)2);
-  auto proc3 = AddProcess((HANDLE)3);
+  auto non_existant_process = AddThreadToProcess((HANDLE)9, (HANDLE)901);
+
+  auto p1 = AddProcess((HANDLE)1);
+  auto th1 = AddThreadToProcess((HANDLE)1, (HANDLE)101);
+  auto th2 = AddThreadToProcess((HANDLE)1, (HANDLE)102);
+  auto th3 = AddThreadToProcess((HANDLE)1, (HANDLE)103);
 
   PrintProcessList();
 
-  RemoveProcess((HANDLE)2);
+  RemoveThreadFromProcess((HANDLE)1, (HANDLE)102);
 
   PrintProcessList();
 

@@ -3,8 +3,6 @@
 
 #include "structures.h"
 
-#define DbgPrintPrefix(s, ...) printf(s "\n", __VA_ARGS__)
-
 typedef struct _THREAD_INFO {
   LIST_ENTRY ThreadEntry;
   HANDLE tid;
@@ -18,12 +16,11 @@ typedef struct _PROCESS_INFO {
 
 PPROCESS_INFO AddProcess(HANDLE pid);
 
-/// <summary>
-/// Safe to call multiple times, even on processes that don't exist
-/// </summary>
-/// <param name="pid"></param>
-/// <returns>TRUE if the process was removed</returns>
+PTHREAD_INFO AddThreadToProcess(HANDLE pid, HANDLE tid);
+
 BOOLEAN RemoveProcess(HANDLE pid);
+
+BOOLEAN RemoveThreadFromProcess(HANDLE pid, HANDLE tid);
 
 void FreeTrackedProcesses();
 
