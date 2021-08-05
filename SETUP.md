@@ -11,18 +11,29 @@ Kernel driver for removing ThreadHideFromDebugger from processes.
 
 ```bcdedit /debug on```
 
-```bcdedit /dbgsettings serial debugport:n baudrate:115200```
-
-where n is the number of a COM port on the virtual machine.
-
 ## KDNET
 * https://www.youtube.com/watch?v=V7DJ_ptkOpM
 
-## Create a named pipe
-* https://docs.vmware.com/en/VMware-Workstation-Pro/16.0/com.vmware.ws.using.doc/GUID-70C25BED-6791-4AF2-B530-8030E39ED749.html
+### On host machine
+```
+cmd> ipconfig
 
-```\\.\pipe\kdebug```
+...
+Ethernet adapter VMware Network Adapter VMnet1:
+
+   Connection-specific DNS Suffix  . :
+   Link-local IPv6 Address . . . . . : fe80::fdd0:db3a:2bfc:db59%23
+   Autoconfiguration IPv4 Address. . : 169.254.219.89                   <<<<<<< this ip address
+   Subnet Mask . . . . . . . . . . . : 255.255.0.0
+   Default Gateway . . . . . . . . . :
+...
+
+```
+
+### On VM
+```
+cmd> kdnet <host_ip> <port>
+```
 
 # Setup Host machine
 * Windows SDK https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/
-
