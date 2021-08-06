@@ -10,8 +10,9 @@
 #define IOCTL_THREAD_UNHIDE_FROM_DEBUGGER \
   CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-#define ADDPTR(ptr, val) ((unsigned char*)ptr + val)
-#define SUBPTR(ptr, val) ((unsigned char*)ptr - val)
+#define PtrAdd(ptr, offset) (PVOID)(((SIZE_T)ptr) + ((SIZE_T)offset))
+#define PtrSub(ptr, offset) (PVOID)(((SIZE_T)ptr) - ((SIZE_T)offset))
+#define PtrDeref(ptr, offset, type) *(type*)(PtrAdd(ptr, offset));
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 #define CLEAR_BIT(p, n) ((p) &= ~((1) << (n)))

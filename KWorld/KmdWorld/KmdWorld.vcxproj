@@ -71,11 +71,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Driver.c" />
-    <ClCompile Include="TrackProcesses.c" />
+    <ClCompile Include="undocumented.c" />
+    <ClCompile Include="UtilNt.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\DriverCommon.h" />
-    <ClInclude Include="TrackProcesses.h" />
+    <ClInclude Include="undocumented.h" />
+    <ClInclude Include="UtilNt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
