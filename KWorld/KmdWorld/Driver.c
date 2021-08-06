@@ -34,7 +34,7 @@ NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
 
   // Find the threads associated with this process
   for (ULONG thread_index = 0; thread_index < spi.NumberOfThreads; ++thread_index) {
-    const SYSTEM_THREAD_INFORMATION* ti = &spi.Threads[thread_index];
+    PSYSTEM_THREAD_INFORMATION ti = &spi.Threads[thread_index];
     if (ti->ClientId.UniqueProcess != spi.UniqueProcessId)
       continue;
 
