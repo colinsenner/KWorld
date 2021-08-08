@@ -27,7 +27,10 @@
     <ClCompile Include="Driver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TrackProcesses.c">
+    <ClCompile Include="undocumented.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadUnhideFromDebugger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +38,10 @@
     <ClInclude Include="..\Common\DriverCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TrackProcesses.h">
+    <ClInclude Include="undocumented.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadUnhideFromDebugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
