@@ -3,7 +3,7 @@
 #include "..\Common\DriverCommon.h"
 #include "undocumented.h"
 
-static size_t Offset_CrossThreadFlags = 0;
+static ULONG Offset_CrossThreadFlags = 0;
 
 NTSTATUS LookupOffsetOfCrossThreadFlags() {
   NTSTATUS status = STATUS_SUCCESS;
@@ -56,7 +56,7 @@ NTSTATUS UnhideThread(HANDLE tid) {
 
   if (CHECK_BIT(*CrossThreadFlags, 2)) {
     // This thread was hidden, unhide it
-    DbgPrintPrefix("[+] Thread %llu unhidden", (ULONG_PTR)tid);
+    DbgPrintPrefix("[+] Thread %llu unhidden (ETHREAD: %p)", (ULONG_PTR)tid, pThread);
     *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
   }
 
