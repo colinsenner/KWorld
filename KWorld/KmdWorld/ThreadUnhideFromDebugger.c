@@ -75,6 +75,15 @@ NTSTATUS ThreadUnhideFromDebugger(HANDLE pid) {
 
   BOOLEAN found = FALSE;
 
+  // On first run lookup the offset of CrossThreadFlags on an ETHREAD structure
+  if (Offset_CrossThreadFlags == 0) {
+    DbgPrintPrefix("Offset_CrossThreadFlags is 0, looking up the offset now");
+    status = LookupOffsetOfCrossThreadFlags();
+
+    if (!NT_SUCCESS(status))
+      return status;
+  }
+
   /*
   https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ex/sysinfo/query.htm?tx=76&ts=0,1285
   ... (Roughly, the expected size tends to be returned for
@@ -124,7 +133,6 @@ NTSTATUS ThreadUnhideFromDebugger(HANDLE pid) {
         if (ti->ClientId.UniqueProcess != spi->UniqueProcessId)
           continue;
 
-        DbgPrintPrefix("  tid: %llu", (ULONG_PTR)ti->ClientId.UniqueThread);
         UnhideThread(ti->ClientId.UniqueThread);
       }
 
