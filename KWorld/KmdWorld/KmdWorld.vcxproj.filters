@@ -30,7 +30,7 @@
     <ClCompile Include="undocumented.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UtilNt.c">
+    <ClCompile Include="ThreadUnhideFromDebugger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="undocumented.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UtilNt.h">
+    <ClInclude Include="ThreadUnhideFromDebugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,7 @@
 #include <ntddk.h>
 
 #include "..\Common\DriverCommon.h"
-#include "UtilNt.h"
+#include "ThreadUnhideFromDebugger.h"
 #include "undocumented.h"
 
 DRIVER_INITIALIZE DriverEntry;
@@ -14,34 +14,6 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
   DbgPrintPrefix("Driver unloaded, deleting symbolic links and devices");
   IoDeleteDevice(DriverObject->DeviceObject);
   IoDeleteSymbolicLink(&DEVICE_SYMBOLIC_NAME);
-}
-
-NTSTATUS ThreadUnhideFromDebugger(size_t pid) {
-  UNREFERENCED_PARAMETER(pid);
-
-  NTSTATUS status = STATUS_SUCCESS;
-
-  // Find the process
-  SYSTEM_PROCESS_INFORMATION spi;
-  status = GetSystemProcessInfo((HANDLE)pid, &spi);
-
-  if (!NT_SUCCESS(status)) {
-    DbgPrintPrefix("Couldn't find the process %llu. (0x%X)", (ULONG_PTR)pid, status);
-    return status;
-  }
-
-  DbgPrintPrefix("Total threads: %lu", spi.NumberOfThreads);
-
-  // Find the threads associated with this process
-  for (ULONG thread_index = 0; thread_index < spi.NumberOfThreads; ++thread_index) {
-    PSYSTEM_THREAD_INFORMATION ti = &spi.Threads[thread_index];
-    if (ti->ClientId.UniqueProcess != spi.UniqueProcessId)
-      continue;
-
-    DbgPrintPrefix("tid: %llu", (ULONG_PTR)ti->ClientId.UniqueThread);
-  }
-
-  return status;
 }
 
 NTSTATUS HandleCustomIOCTL(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
@@ -61,13 +33,14 @@ NTSTATUS HandleCustomIOCTL(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
       ASSERT(stackLocation->Parameters.DeviceIoControl.InputBufferLength == sizeof(size_t));
       ASSERT(Irp->AssociatedIrp.SystemBuffer);
 
-      size_t pid = *(size_t*)Irp->AssociatedIrp.SystemBuffer;
-      DbgPrintPrefix("PID from userland: %zu", pid);
+      HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
+      DbgPrintPrefix("PID from userland: %llu", pid);
 
       status = ThreadUnhideFromDebugger(pid);
       break;
     default:
       DbgPrintPrefix("Unsupported IOCTL: (0x%x)", IoControlCode);
+      status = STATUS_UNSUCCESSFUL;
       break;
   }
 
