@@ -1,14 +1,68 @@
 #include "ThreadUnhideFromDebugger.h"
 
-#include <ntddk.h>
-
 #include "..\Common\DriverCommon.h"
 #include "undocumented.h"
 
-NTSTATUS UnhideThread(HANDLE tid) {
-  UNREFERENCED_PARAMETER(tid);
+static size_t Offset_CrossThreadFlags = 0;
 
-  return STATUS_SUCCESS;
+NTSTATUS LookupOffsetOfCrossThreadFlags() {
+  NTSTATUS status = STATUS_SUCCESS;
+
+  UNICODE_STRING routineName;
+  RtlInitUnicodeString(&routineName, L"PsIsThreadTerminating");
+  PVOID Addr_PsIsThreadTerminating = MmGetSystemRoutineAddress(&routineName);
+
+  if (!Addr_PsIsThreadTerminating) {
+    DbgPrintPrefix("[!] Couldn't locate function PsIsThreadTerminating");
+    return STATUS_UNSUCCESSFUL;
+  }
+
+  //
+  // Expected: fffff804`48113d30    8b8110050000     mov eax, dword ptr [rcx+510h]
+  //
+  ULONG asm_bytes = *(ULONG*)Addr_PsIsThreadTerminating;
+
+  ULONG opcode = asm_bytes & 0x0000FFFF;
+
+  if (opcode != 0x818B) {
+    DbgPrintPrefix("[!] Unexpected bytes at the beginning of function PsIsThreadTerminating");
+    return STATUS_UNSUCCESSFUL;
+  }
+
+  // Found instruction mov eax, [rcx+???]
+  // Set our offset to the immediate
+  Offset_CrossThreadFlags = asm_bytes >> 16;
+
+  DbgPrintPrefix("[+] Found offset of CrossThreadFlags in nt!_ETHREAD: 0x%X", Offset_CrossThreadFlags);
+
+  return status;
+}
+
+NTSTATUS UnhideThread(HANDLE tid) {
+  NTSTATUS status = STATUS_SUCCESS;
+
+  PETHREAD pThread;
+
+  // Increases reference count on success
+  status = PsLookupThreadByThreadId(tid, &pThread);
+
+  if (!NT_SUCCESS(status)) {
+    DbgPrintPrefix("[!] Problem getting thread with tid: %llu", (ULONG_PTR)tid);
+    return status;
+  }
+
+  // Found the _ETHREAD  (dt nt!_ETHREAD <addr>)
+  PULONG CrossThreadFlags = PtrAdd(pThread, Offset_CrossThreadFlags);
+
+  if (CHECK_BIT(*CrossThreadFlags, 2)) {
+    // This thread was hidden, unhide it
+    DbgPrintPrefix("[+] Thread %llu unhidden", (ULONG_PTR)tid);
+    *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
+  }
+
+  ObDereferenceObject(pThread);
+
+  return status;
 }
 
 NTSTATUS ThreadUnhideFromDebugger(HANDLE pid) {
