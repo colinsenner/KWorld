@@ -16,7 +16,14 @@
             <RowDefinition Height="45"/>
         </Grid.RowDefinitions>
 
-        <ListView x:Name="processListView" Grid.Column="0" Grid.Row="0" SizeChanged="ListView_SizeChanged" Loaded="ListView_Loaded">
+        <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Id}" Header="Pid"/>
+                <DataGridTextColumn Binding="{Binding ProcessName}" Header="Process Name"/>
+                <DataGridTextColumn Binding="{Binding MainModule.FileName}" Header="Path"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--<ListView x:Name="processListView" Grid.Column="0" Grid.Row="0" SizeChanged="ListView_SizeChanged" Loaded="ListView_Loaded">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="Pid"/>
@@ -24,7 +31,7 @@
                     <GridViewColumn DisplayMemberBinding="{Binding MainModule.FileName}" Header="Filename"/>
                 </GridView>
             </ListView.View>
-        </ListView>
+        </ListView>-->
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
