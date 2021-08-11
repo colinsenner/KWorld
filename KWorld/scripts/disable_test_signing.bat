@@ -1,4 +1,4 @@
 @echo off
-bcdedit /set testsigning on
+bcdedit /set testsigning off
 echo Restart your machine for it to take effect.
 pause
