@@ -54,9 +54,9 @@ namespace KThreadUnhide
             var userProcesses = processes.Where(p => UserUtils.GetProcessUser(p) == UserUtils.GetCurrentUser()).ToList();
 
             // Order by start time
-            var userProcessesByStartTime = userProcesses.OrderByDescending(p => p.StartTime);
+            //var userProcessesByStartTime = userProcesses.OrderByDescending(p => p.StartTime);
 
-            processDataGrid.ItemsSource = userProcessesByStartTime;
+            processDataGrid.ItemsSource = userProcesses;
         }
 
         private void refreshButton_Click(object sender, RoutedEventArgs e)

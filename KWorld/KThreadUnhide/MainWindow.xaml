@@ -18,7 +18,14 @@
 
         <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Id}" Header="Pid"/>
+                <DataGridTextColumn Binding="{Binding Id}" Header="Pid">
+                    <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="0,0,40,0"/>
+                    </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding StartTime, StringFormat='hh:mm tt'}" Header="Start Time" SortDirection="Descending"/>
                 <DataGridTextColumn Binding="{Binding ProcessName}" Header="Process Name"/>
                 <DataGridTextColumn Binding="{Binding MainModule.FileName}" Header="Path"/>
             </DataGrid.Columns>
