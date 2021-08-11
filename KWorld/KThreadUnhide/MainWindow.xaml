@@ -13,7 +13,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="45"/>
+            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
         <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False">
@@ -23,24 +23,17 @@
                 <DataGridTextColumn Binding="{Binding MainModule.FileName}" Header="Path"/>
             </DataGrid.Columns>
         </DataGrid>
-        <!--<ListView x:Name="processListView" Grid.Column="0" Grid.Row="0" SizeChanged="ListView_SizeChanged" Loaded="ListView_Loaded">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="Pid"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding ProcessName}" Width="200" Header="Process Name"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding MainModule.FileName}" Header="Filename"/>
-                </GridView>
-            </ListView.View>
-        </ListView>-->
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="0,0,0,5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width=".2*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="refreshButton" Margin="8" Grid.Column="0" Content="Refresh" Click="refreshButton_Click"/>
-            <Button x:Name="unhideButton" Margin="8" Grid.Column="1" Content="Unhide" Click="unhideButton_Click"/>
+            <CheckBox x:Name="showAllProcesses" Grid.Column="0" Content="Show All Processes" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="showAllProcesses_Changed" Unchecked="showAllProcesses_Changed"/>
+            <Button x:Name="refreshButton" Margin="8" Grid.Column="1" Content="Refresh" Click="refreshButton_Click"/>
+            <Button x:Name="unhideButton" Margin="8" Grid.Column="2" Content="Unhide" Click="unhideButton_Click"/>
         </Grid>
     </Grid>
 </Window>
