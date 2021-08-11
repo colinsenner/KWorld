@@ -198,10 +198,10 @@ namespace KThreadUnhide
     {
         public SERVICE_TYPES dwServiceType;
         public SERVICE_STATE dwCurrentState;
-        public uint dwControlsAccepted;
-        public uint dwWin32ExitCode;
-        public uint dwServiceSpecificExitCode;
-        public uint dwCheckPoint;
-        public uint dwWaitHint;
+        public int dwControlsAccepted;
+        public int dwWin32ExitCode;
+        public int dwServiceSpecificExitCode;
+        public int dwCheckPoint;
+        public int dwWaitHint;
     }
 }

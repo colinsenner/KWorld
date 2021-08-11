@@ -95,38 +95,6 @@ namespace KThreadUnhide
             return true;
         }
 
-        private bool DeleteService()
-        {
-            var hManager = Services.OpenSCManager(null, null, SCM_ACCESS.SC_MANAGER_ALL_ACCESS);
-
-            if (hManager == IntPtr.Zero)
-            {
-                MessageBoxErrorWithCode("OpenSCManager failed");
-                return false;
-            }
-
-            var hService = Services.OpenService(hManager, serviceName, SERVICE_ACCESS.SERVICE_ALL_ACCESS);
-
-            if (hService == IntPtr.Zero)
-            {
-                MessageBoxErrorWithCode("OpenService failed");
-                Services.CloseServiceHandle(hManager);
-                return false;
-            }
-
-            if (!Services.DeleteService(hService))
-            {
-                MessageBoxErrorWithCode("DeleteService failed");
-                Services.CloseServiceHandle(hManager);
-                Services.CloseServiceHandle(hService);
-                return false;
-            }
-
-            Services.CloseServiceHandle(hManager);
-            Services.CloseServiceHandle(hService);
-            return true;
-        }
-
         public bool Start()
         {
             if (!StartService())
@@ -150,9 +118,7 @@ namespace KThreadUnhide
                 return false;
             }
 
-            var hService = Services.OpenService(hManager, serviceName, SERVICE_ACCESS.SERVICE_STOP |
-                                                                        SERVICE_ACCESS.SERVICE_QUERY_STATUS |
-                                                                        SERVICE_ACCESS.SERVICE_ENUMERATE_DEPENDENTS);
+            var hService = Services.OpenService(hManager, serviceName, SERVICE_ACCESS.SERVICE_STOP);
 
             if (hService == IntPtr.Zero)
             {
@@ -161,24 +127,25 @@ namespace KThreadUnhide
                 return false;
             }
 
-            var serviceStatus = Services.QueryServiceStatusEx(hService);
+            SERVICE_STATUS status = new SERVICE_STATUS();
 
-            // Service is already stopped
-            if (serviceStatus.dwCurrentState == SERVICE_STATE.SERVICE_STOPPED)
+            Services.ControlService(hService, SERVICE_CONTROL.STOP, ref status);
+
+            var changedStatus = WaitForServiceStatus(hService, SERVICE_STATE.SERVICE_STOP_PENDING, SERVICE_STATE.SERVICE_STOPPED);
+
+            if (!changedStatus)
+                throw new ApplicationException("Unable to stop service");
+
+            Services.CloseServiceHandle(hManager);
+
+            if (!Services.DeleteService(hService))
             {
-                Services.CloseServiceHandle(hManager);
+                MessageBoxErrorWithCode("DeleteService failed");
                 Services.CloseServiceHandle(hService);
-                return true;
+                return false;
             }
 
-            // If a stop is pending, wait a bit for it
-
-
-
-            // Delete the service
-            Services.CloseServiceHandle(hManager);
             Services.CloseServiceHandle(hService);
-
 
             return true;
         }
