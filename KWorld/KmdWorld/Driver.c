@@ -36,6 +36,11 @@ NTSTATUS HandleCustomIOCTL(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
       HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
       DbgPrintPrefix("PID from userland: %llu", pid);
 
+      if (pid <= 4) {
+        DbgPrintPrefix("Not allowed on system process");
+        break;
+      }
+
       status = ThreadUnhideFromDebugger(pid);
       break;
     default:

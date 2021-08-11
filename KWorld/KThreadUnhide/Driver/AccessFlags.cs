@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace KThreadUnhide
@@ -111,7 +112,7 @@ namespace KThreadUnhide
                           SERVICE_USER_DEFINED_CONTROL)
     }
 
-    public enum SERVICE_TYPE : uint
+    public enum SERVICE_TYPES : uint
     {
         SERVICE_KERNEL_DRIVER = 0x00000001,
         SERVICE_FILE_SYSTEM_DRIVER = 0x00000002,
@@ -147,5 +148,60 @@ namespace KThreadUnhide
                                         SC_MANAGER_LOCK               |
                                         SC_MANAGER_QUERY_LOCK_STATUS  |
                                         SC_MANAGER_MODIFY_BOOT_CONFIG)
+    }
+
+    [Flags]
+    public enum SERVICE_CONTROL : uint
+    {
+        STOP = 0x00000001,
+        PAUSE = 0x00000002,
+        CONTINUE = 0x00000003,
+        INTERROGATE = 0x00000004,
+        SHUTDOWN = 0x00000005,
+        PARAMCHANGE = 0x00000006,
+        NETBINDADD = 0x00000007,
+        NETBINDREMOVE = 0x00000008,
+        NETBINDENABLE = 0x00000009,
+        NETBINDDISABLE = 0x0000000A,
+        DEVICEEVENT = 0x0000000B,
+        HARDWAREPROFILECHANGE = 0x0000000C,
+        POWEREVENT = 0x0000000D,
+        SESSIONCHANGE = 0x0000000E
+    }
+
+    public enum SERVICE_STATE : uint
+    {
+        SERVICE_STOPPED = 0x00000001,
+        SERVICE_START_PENDING = 0x00000002,
+        SERVICE_STOP_PENDING = 0x00000003,
+        SERVICE_RUNNING = 0x00000004,
+        SERVICE_CONTINUE_PENDING = 0x00000005,
+        SERVICE_PAUSE_PENDING = 0x00000006,
+        SERVICE_PAUSED = 0x00000007
+    }
+
+    [Flags]
+    public enum SERVICE_ACCEPT : uint
+    {
+        STOP = 0x00000001,
+        PAUSE_CONTINUE = 0x00000002,
+        SHUTDOWN = 0x00000004,
+        PARAMCHANGE = 0x00000008,
+        NETBINDCHANGE = 0x00000010,
+        HARDWAREPROFILECHANGE = 0x00000020,
+        POWEREVENT = 0x00000040,
+        SESSIONCHANGE = 0x00000080,
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    public struct SERVICE_STATUS
+    {
+        public SERVICE_TYPES dwServiceType;
+        public SERVICE_STATE dwCurrentState;
+        public uint dwControlsAccepted;
+        public uint dwWin32ExitCode;
+        public uint dwServiceSpecificExitCode;
+        public uint dwCheckPoint;
+        public uint dwWaitHint;
     }
 }
