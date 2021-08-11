@@ -13,5 +13,9 @@ namespace KThreadUnhide
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Settings.Default.Save();
+        }
     }
 }
