@@ -6,6 +6,7 @@ using System.Windows;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.IO;
 
 // TODO Automatically filter out system processes
 // TODO Add checkbox to enable viewing of system processes
@@ -17,11 +18,23 @@ namespace KThreadUnhide
     /// </summary>
     public partial class MainWindow : Window
     {
-        List<Process> processes = new List<Process>();
+        KernelDriver kmdWorld;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            ConsoleManager.Show();
+
+            var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "KmdWorld.sys");
+
+            kmdWorld = new KernelDriver("KmdWorld", driverPath);
+
+            Console.WriteLine("Creating KmdWorld service");
+            if (!kmdWorld.Create())
+            {
+                MessageBox.Show("Error creating service", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
             PopulateProcesses();
         }
@@ -51,10 +64,7 @@ namespace KThreadUnhide
             ClearDataList();
 
             var processes = Process.GetProcesses();
-            var userProcesses = processes.Where(p => UserUtils.GetProcessUser(p) == UserUtils.GetCurrentUser()).ToList();
-
-            // Order by start time
-            //var userProcessesByStartTime = userProcesses.OrderByDescending(p => p.StartTime);
+            var userProcesses = processes.Where(p => UserUtils.GetProcessUser(p) == UserUtils.GetCurrentUser());
 
             processDataGrid.ItemsSource = userProcesses;
         }
