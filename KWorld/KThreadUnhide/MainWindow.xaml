@@ -20,13 +20,28 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="35"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
+        <!-- Search Box -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
+            <Grid Margin="10,10,10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="0.05*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Grid.ColumnSpan="2" x:Name="searchBox" Text="notepad" FontWeight="Normal" Background="#FFEAEAEA"/>
+                <Button Grid.Column="1" x:Name="clearSearchBox" Content="X"/>
+            </Grid>
+        </Grid>
 
+        <!-- Process list -->
         <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="1" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id}" Header="Pid"/>
@@ -36,6 +51,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
+        <!-- Bottom Buttons -->
         <Grid Grid.Row="2" Margin="0,0,0,5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
