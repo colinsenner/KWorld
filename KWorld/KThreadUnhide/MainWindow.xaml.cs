@@ -18,7 +18,7 @@ namespace KThreadUnhide
     /// </summary>
     public partial class MainWindow : Window
     {
-        KernelDriver KmdWorldDriver;
+        string driverName = "KmdWorld";
 
         public MainWindow()
         {
@@ -26,16 +26,20 @@ namespace KThreadUnhide
 
             ConsoleManager.Show();
 
-            var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "KmdWorld.sys");
+            var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
 
-            KmdWorldDriver = new KernelDriver("KmdWorld", driverPath);
+            Console.WriteLine($"Creating {driverName} service");
 
-            Console.WriteLine("Creating KmdWorld service");
-            if (!KmdWorldDriver.Start())
+            if (!ServiceInstaller.ServiceIsInstalled(driverName))
             {
-                MessageBox.Show("Couldn't start driver service.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Application.Current.Shutdown();
+                ServiceInstaller.InstallAndStart(driverName, driverName, driverPath);
             }
+            else
+            {
+                ServiceInstaller.StartService(driverName);
+            }
+
+            //Application.Current.Shutdown();
 
             PopulateProcesses();
         }
@@ -87,7 +91,7 @@ namespace KThreadUnhide
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            KmdWorldDriver.Stop();
+            ServiceInstaller.StopService(driverName);
         }
     }
 }
