@@ -2,10 +2,12 @@
 
 #include <wdm.h>
 
+namespace nt_undocumented {
+
 // Function pointers
 fpZwQuerySystemInformation _ZwQuerySystemInformation = NULL;
 
-NTSTATUS InitUndocumented() {
+NTSTATUS Init() {
   if (!_ZwQuerySystemInformation) {
     UNICODE_STRING routineName;
     RtlInitUnicodeString(&routineName, L"ZwQuerySystemInformation");
@@ -17,3 +19,4 @@ NTSTATUS InitUndocumented() {
 
   return STATUS_SUCCESS;
 }
+}  // namespace nt_undocumented

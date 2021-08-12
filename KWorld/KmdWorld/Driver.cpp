@@ -98,7 +98,7 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
     return status;
   }
 
-  status = InitUndocumented();
+  status = nt_undocumented::Init();
 
   if (!NT_SUCCESS(status)) {
     printk("Error while initializing undocumented functions");

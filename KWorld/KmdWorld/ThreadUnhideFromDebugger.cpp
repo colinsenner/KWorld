@@ -4,6 +4,8 @@
 #include "..\Common\DriverCommon.h"
 #include "undocumented.h"
 
+using namespace nt_undocumented;
+
 static ULONG Offset_CrossThreadFlags = 0;
 
 NTSTATUS LookupOffsetOfCrossThreadFlags() {
