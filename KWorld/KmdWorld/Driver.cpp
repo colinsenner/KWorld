@@ -2,8 +2,8 @@
 
 #include <ntifs.h>
 
-#include "..\Common\DriverCommon.h"
-#include "ThreadUnhideFromDebugger.h"
+#include "..\Common\ku_shared.h"
+#include "unhide_from_debugger.h"
 #include "nt_undocumented.h"
 
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
@@ -36,7 +36,7 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
       auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
 
       printk("ProcessId from userland: %lu", data.ProcessId);
-      status = ThreadUnhideFromDebugger(data);
+      status = kmdworld::ThreadUnhideFromDebugger(data);
       break;
     default:
       status = STATUS_INVALID_DEVICE_REQUEST;

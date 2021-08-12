@@ -1,9 +1,11 @@
-#include "ThreadUnhideFromDebugger.h"
+#include "unhide_from_debugger.h"
 
 #include "Driver.h"
 #include "nt_undocumented.h"
 
 using namespace nt_undocumented;
+
+namespace kmdworld {
 
 static ULONG Offset_CrossThreadFlags = 0;
 
@@ -158,3 +160,5 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
 
   return status;
 }
+
+}  // namespace kmdworld

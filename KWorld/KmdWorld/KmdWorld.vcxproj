@@ -67,14 +67,14 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Driver.cpp" />
-    <ClCompile Include="ThreadUnhideFromDebugger.cpp" />
+    <ClCompile Include="driver.cpp" />
+    <ClCompile Include="unhide_from_debugger.cpp" />
     <ClCompile Include="nt_undocumented.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\DriverCommon.h" />
-    <ClInclude Include="Driver.h" />
-    <ClInclude Include="ThreadUnhideFromDebugger.h" />
+    <ClInclude Include="..\Common\ku_shared.h" />
+    <ClInclude Include="driver.h" />
+    <ClInclude Include="unhide_from_debugger.h" />
     <ClInclude Include="nt_undocumented.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

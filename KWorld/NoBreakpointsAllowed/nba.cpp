@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <thread>
 
-#include "ThreadHideFromDebugger.h"
+#include "thread_hide_from_debugger.hpp"
 
 void thread_two() {
   printf("[+] New thread created: %d (0x%X)\n", GetCurrentThreadId(), GetCurrentThreadId());

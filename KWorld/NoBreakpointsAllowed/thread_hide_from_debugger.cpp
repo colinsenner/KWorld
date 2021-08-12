@@ -1,4 +1,4 @@
-#include "ThreadHideFromDebugger.h"
+#include "thread_hide_from_debugger.hpp"
 
 #include <Windows.h>
 

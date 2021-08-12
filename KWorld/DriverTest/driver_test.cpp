@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "..\Common\DriverCommon.h"
+#include "..\Common\ku_shared.h"
 
 int Error(const char* message) {
   printf("[!] %s (error %d)\n", message, GetLastError());

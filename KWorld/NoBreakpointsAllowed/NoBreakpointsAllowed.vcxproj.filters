@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NoBreakpointsAllowed.cpp">
+    <ClCompile Include="nba.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadHideFromDebugger.cpp">
+    <ClCompile Include="thread_hide_from_debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ThreadHideFromDebugger.h">
+    <ClInclude Include="thread_hide_from_debugger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

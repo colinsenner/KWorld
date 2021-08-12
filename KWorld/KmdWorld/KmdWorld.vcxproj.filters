@@ -11,27 +11,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Driver.cpp">
+    <ClCompile Include="driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nt_undocumented.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadUnhideFromDebugger.cpp">
+    <ClCompile Include="unhide_from_debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\DriverCommon.h">
+    <ClInclude Include="..\Common\ku_shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nt_undocumented.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadUnhideFromDebugger.h">
+    <ClInclude Include="unhide_from_debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Driver.h">
+    <ClInclude Include="driver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
