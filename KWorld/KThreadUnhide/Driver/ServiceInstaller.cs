@@ -35,7 +35,7 @@ namespace KThreadUnhide
 
         #region CreateService
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName, ServiceAccessRights dwDesiredAccess, int dwServiceType, ServiceBootFlag dwStartType, ServiceError dwErrorControl, string lpBinaryPathName, string lpLoadOrderGroup, IntPtr lpdwTagId, string lpDependencies, string lp, string lpPassword);
+        private static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName, ServiceAccessRights dwDesiredAccess, ServiceType dwServiceType, ServiceBootFlag dwStartType, ServiceError dwErrorControl, string lpBinaryPathName, string lpLoadOrderGroup, IntPtr lpdwTagId, string lpDependencies, string lp, string lpPassword);
         #endregion
 
         #region CloseServiceHandle
@@ -66,21 +66,25 @@ namespace KThreadUnhide
         public static extern bool StartService(IntPtr hService, int dwNumServiceArgs, string[] lpServiceArgVectors);
         #endregion
 
-        public static void Uninstall(string serviceName)
+        public static void StopAndUninstall(string serviceName)
         {
-            IntPtr scm = OpenSCManager(ScmAccessRights.AllAccess);
+            if (!ServiceIsInstalled(serviceName))
+                return;
+
+            var scm = OpenSCManager(ScmAccessRights.Connect);
 
             try
             {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.AllAccess);
+                var service = OpenService(scm, serviceName, ServiceAccessRights.AllAccess);
                 if (service == IntPtr.Zero)
-                    throw new ApplicationException("Service not installed.");
+                    throw new ApplicationException("Could not open service.");
 
                 try
                 {
                     StopService(service);
+
                     if (!DeleteService(service))
-                        throw new ApplicationException("Could not delete service " + Marshal.GetLastWin32Error());
+                        throw new ApplicationException("Failed to delete service.");
                 }
                 finally
                 {
@@ -91,18 +95,21 @@ namespace KThreadUnhide
             {
                 CloseServiceHandle(scm);
             }
+
         }
 
         public static bool ServiceIsInstalled(string serviceName)
         {
-            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
+            var scm = OpenSCManager(ScmAccessRights.Connect);
 
             try
             {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus);
+                // Try to open the service, if it's installed
+
+                var service = OpenService(scm, serviceName, ServiceAccessRights.Start);
 
                 if (service == IntPtr.Zero)
-                    return false;
+                   return false;
 
                 CloseServiceHandle(service);
                 return true;
@@ -115,14 +122,23 @@ namespace KThreadUnhide
 
         public static void InstallAndStart(string serviceName, string displayName, string fileName)
         {
-            IntPtr scm = OpenSCManager(ScmAccessRights.AllAccess);
+            var scm = OpenSCManager(null, null, ScmAccessRights.CreateService);
 
             try
             {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.AllAccess);
-
-                if (service == IntPtr.Zero)
-                    service = CreateService(scm, serviceName, displayName, ServiceAccessRights.AllAccess, SERVICE_WIN32_OWN_PROCESS, ServiceBootFlag.AutoStart, ServiceError.Normal, fileName, null, IntPtr.Zero, null, null, null);
+                var service = CreateService(scm,
+                                            serviceName,
+                                            serviceName,
+                                            ServiceAccessRights.AllAccess,
+                                            ServiceType.KernelDriver,
+                                            ServiceBootFlag.DemandStart,
+                                            ServiceError.Normal,
+                                            fileName,
+                                            null,
+                                            IntPtr.Zero,
+                                            null,
+                                            null,
+                                            "");
 
                 if (service == IntPtr.Zero)
                     throw new ApplicationException("Failed to install service.");
@@ -144,11 +160,11 @@ namespace KThreadUnhide
 
         public static void StartService(string serviceName)
         {
-            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
+            var scm = OpenSCManager(ScmAccessRights.Connect);
 
             try
             {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Start);
+                var service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Start);
                 if (service == IntPtr.Zero)
                     throw new ApplicationException("Could not open service.");
 
@@ -167,13 +183,52 @@ namespace KThreadUnhide
             }
         }
 
+        private static bool WaitForServiceStatus(IntPtr service, ServiceState waitState, ServiceState desiredState)
+        {
+            var status = GetServiceStatus(service);
+
+            if (status.dwCurrentState == desiredState)
+                return true;
+
+            int dwStartTime = Environment.TickCount;
+            int dwTimeout = 30000; // 30-second time-out
+
+            while (status.dwCurrentState == waitState)
+            {
+                // Do not wait longer than the wait hint. A good interval is
+                // one-tenth of the wait hint but not less than 1 second
+                // and not more than 10 seconds.
+
+                int dwWaitTime = status.dwWaitHint / 10;
+
+                if (dwWaitTime < 1000)
+                    dwWaitTime = 1000;
+                else if (dwWaitTime > 10000)
+                    dwWaitTime = 10000;
+
+                Thread.Sleep(dwWaitTime);
+
+                // We've slept to allow the driver to stop itself
+                // Check the status again, if we haven't stopped
+                status = GetServiceStatus(service);
+
+                if (status.dwCurrentState == desiredState)
+                    break;
+
+                if (Environment.TickCount - dwStartTime > dwTimeout)
+                    throw new ApplicationException($"Timed out waiting for driver to reach {desiredState}");
+            }
+
+            return status.dwCurrentState == desiredState;
+        }
+
         public static void StopService(string serviceName)
         {
-            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
+            var scm = OpenSCManager(ScmAccessRights.Connect);
 
             try
             {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Stop);
+                var service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Stop);
                 if (service == IntPtr.Zero)
                     throw new ApplicationException("Could not open service.");
 
@@ -192,106 +247,88 @@ namespace KThreadUnhide
             }
         }
 
-        private static void StartService(IntPtr service)
+        private static ServiceState GetServiceState(IntPtr service)
         {
-            if (!StartService(service, 0, null))
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw new ApplicationException($"Failed Starting service (code: {error})");
-            }
+            var status = GetServiceStatus(service);
 
-            var changedStatus = WaitForServiceStatus(service, ServiceState.StartPending, ServiceState.Running);
-            if (!changedStatus)
-                throw new ApplicationException("Unable to start service");
+            return status.dwCurrentState;
         }
 
-        private static void StopService(IntPtr service)
-        {
-            SERVICE_STATUS status = new SERVICE_STATUS();
-            ControlService(service, ServiceControl.Stop, status);
-            var changedStatus = WaitForServiceStatus(service, ServiceState.StopPending, ServiceState.Stopped);
-            if (!changedStatus)
-                throw new ApplicationException("Unable to stop service");
-        }
-
-        public static ServiceState GetServiceStatus(string serviceName)
-        {
-            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
-
-            try
-            {
-                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus);
-                if (service == IntPtr.Zero)
-                    return ServiceState.NotFound;
-
-                try
-                {
-                    return GetServiceStatus(service);
-                }
-                finally
-                {
-                    CloseServiceHandle(service);
-                }
-            }
-            finally
-            {
-                CloseServiceHandle(scm);
-            }
-        }
-
-        private static ServiceState GetServiceStatus(IntPtr service)
+        private static SERVICE_STATUS GetServiceStatus(IntPtr service)
         {
             SERVICE_STATUS status = new SERVICE_STATUS();
 
             if (QueryServiceStatus(service, status) == 0)
                 throw new ApplicationException("Failed to query service status.");
 
-            return status.dwCurrentState;
+            return status;
         }
 
-        private static bool WaitForServiceStatus(IntPtr service, ServiceState waitStatus, ServiceState desiredStatus)
+        private static void StartService(IntPtr service)
         {
-            SERVICE_STATUS status = new SERVICE_STATUS();
+            // Check if it's already running
+            var state = GetServiceState(service);
+            if (state != ServiceState.Stopped && state != ServiceState.StopPending)
+                return;
 
-            QueryServiceStatus(service, status);
-            if (status.dwCurrentState == desiredStatus) return true;
-
-            int dwStartTickCount = Environment.TickCount;
-            int dwOldCheckPoint = status.dwCheckPoint;
-
-            while (status.dwCurrentState == waitStatus)
+            // Start the service
+            if (!StartService(service, 0, null))
             {
-                // Do not wait longer than the wait hint. A good interval is
-                // one tenth the wait hint, but no less than 1 second and no
-                // more than 10 seconds.
+                int error = Marshal.GetLastWin32Error();
+                throw new ApplicationException($"Failed Starting service (code: {error})");
+            }
+        }
 
+        private static void StopService(IntPtr service)
+        {
+            // Check if it's already stopped
+            if (GetServiceState(service) == ServiceState.Stopped)
+                return;
+
+            // If a stop is pending, wait for it.
+            if (WaitForServiceStatus(service, ServiceState.StopPending, ServiceState.Stopped))
+            {
+                // We're at our desired state
+                return;
+            }
+
+            // Issue the stop command
+            SERVICE_STATUS status = new SERVICE_STATUS();
+            if (ControlService(service, ServiceControl.Stop, status) == 0)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw new ApplicationException($"Failed Control service (code: {error})");
+            }
+
+            //
+            // Wait for the service to stop (with a timeout)
+            //
+            int dwStartTime = Environment.TickCount;
+            int dwTimeout = 30000; // 30 second time-out
+
+            while (status.dwCurrentState != ServiceState.Stopped)
+            {
                 int dwWaitTime = status.dwWaitHint / 10;
 
-                if (dwWaitTime < 1000) dwWaitTime = 1000;
-                else if (dwWaitTime > 10000) dwWaitTime = 10000;
+                if (dwWaitTime < 1000)
+                    dwWaitTime = 1000;
+                else if (dwWaitTime > 10000)
+                    dwWaitTime = 10000;
 
                 Thread.Sleep(dwWaitTime);
 
-                // Check the status again.
+                // We've slept to allow the driver to stop itself
+                // Check the status again, if we haven't stopped
+                status = GetServiceStatus(service);
 
-                if (QueryServiceStatus(service, status) == 0) break;
+                if (status.dwCurrentState == ServiceState.Stopped)
+                    break;
 
-                if (status.dwCheckPoint > dwOldCheckPoint)
-                {
-                    // The service is making progress.
-                    dwStartTickCount = Environment.TickCount;
-                    dwOldCheckPoint = status.dwCheckPoint;
-                }
-                else
-                {
-                    if (Environment.TickCount - dwStartTickCount > status.dwWaitHint)
-                    {
-                        // No progress made within the wait hint
-                        break;
-                    }
-                }
+                if (Environment.TickCount - dwStartTime > dwTimeout)
+                    throw new ApplicationException($"Timed out waiting for driver to stop");
             }
-            return (status.dwCurrentState == desiredStatus);
+
+            // Service stopped successfully
         }
 
         private static IntPtr OpenSCManager(ScmAccessRights rights)
@@ -304,6 +341,7 @@ namespace KThreadUnhide
         }
     }
 
+    #region Service enumerations
 
     public enum ServiceState
     {
@@ -316,6 +354,15 @@ namespace KThreadUnhide
         ContinuePending = 5,
         PausePending = 6,
         Paused = 7
+    }
+
+    public enum ServiceType : uint
+    {
+        KernelDriver = 0x00000001,
+        SystemDriver = 0x00000002,
+        Win32OwnProcess = 0x00000010,
+        Win32ShareProcess = 0x00000020,
+        InteractiveProcess = 0x00000100
     }
 
     [Flags]
@@ -381,4 +428,5 @@ namespace KThreadUnhide
         Severe = 0x00000002,
         Critical = 0x00000003
     }
+    #endregion
 }

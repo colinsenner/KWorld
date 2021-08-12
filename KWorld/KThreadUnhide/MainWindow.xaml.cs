@@ -24,22 +24,13 @@ namespace KThreadUnhide
         {
             InitializeComponent();
 
-            ConsoleManager.Show();
-
-            var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
-
-            Console.WriteLine($"Creating {driverName} service");
+            //var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
+            var driverPath = @"D:\Gitlab\KWorld\KWorld\bin\KmdWorld.sys";
 
             if (!ServiceInstaller.ServiceIsInstalled(driverName))
-            {
                 ServiceInstaller.InstallAndStart(driverName, driverName, driverPath);
-            }
             else
-            {
                 ServiceInstaller.StartService(driverName);
-            }
-
-            //Application.Current.Shutdown();
 
             PopulateProcesses();
         }
@@ -87,11 +78,6 @@ namespace KThreadUnhide
         private void unhideButton_Click(object sender, RoutedEventArgs e)
         {
 
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            ServiceInstaller.StopService(driverName);
         }
     }
 }
