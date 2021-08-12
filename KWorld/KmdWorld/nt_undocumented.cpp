@@ -1,4 +1,4 @@
-#include "undocumented.h"
+#include "nt_undocumented.h"
 
 #include <wdm.h>
 

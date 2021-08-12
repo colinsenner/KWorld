@@ -1,7 +1,7 @@
 #include "ThreadUnhideFromDebugger.h"
 
 #include "Driver.h"
-#include "..\Common\DriverCommon.h"
+#include "nt_undocumented.h"
 #include "undocumented.h"
 
 using namespace nt_undocumented;
