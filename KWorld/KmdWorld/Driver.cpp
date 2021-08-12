@@ -1,11 +1,10 @@
 #include "Driver.h"
 
 #include <ntifs.h>
-#include <ntddk.h>
 
 #include "..\Common\DriverCommon.h"
 #include "ThreadUnhideFromDebugger.h"
-#include "undocumented.h"
+#include "nt_undocumented.h"
 
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
