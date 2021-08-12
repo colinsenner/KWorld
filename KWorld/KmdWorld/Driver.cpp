@@ -35,7 +35,6 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
       auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
 
-      printk("ProcessId from userland: %lu", data.ProcessId);
       status = kmdworld::ThreadUnhideFromDebugger(data);
       break;
     default:
