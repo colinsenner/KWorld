@@ -69,13 +69,13 @@
   <ItemGroup>
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="ThreadUnhideFromDebugger.cpp" />
-    <ClCompile Include="undocumented.cpp" />
+    <ClCompile Include="nt_undocumented.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\DriverCommon.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="ThreadUnhideFromDebugger.h" />
-    <ClInclude Include="undocumented.h" />
+    <ClInclude Include="nt_undocumented.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,16 +9,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="undocumented.cpp">
+    <ClCompile Include="nt_undocumented.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ThreadUnhideFromDebugger.cpp">
@@ -29,7 +25,7 @@
     <ClInclude Include="..\Common\DriverCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="undocumented.h">
+    <ClInclude Include="nt_undocumented.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThreadUnhideFromDebugger.h">
