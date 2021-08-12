@@ -3,12 +3,15 @@
 #define DRIVER_PREFIX "KmdWorld:"
 #define DRIVER_POOL_TAG 'WdmK'
 
-#define DbgPrintPrefix(s, ...)                          \
-  DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_TRACE_LEVEL, \
-             DRIVER_PREFIX " " s "\n", __VA_ARGS__)
+#if DBG
+// If compiled in debug mode print to DebugView
+#define printk(s, ...) DbgPrint(DRIVER_PREFIX " " s "\n", __VA_ARGS__);
 
-#define IOCTL_THREAD_UNHIDE_FROM_DEBUGGER \
-  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#else
+
+#define printk(s, ...)
+
+#endif  // DBG
 
 #define PtrAdd(ptr, offset) (PVOID)(((SIZE_T)ptr) + ((SIZE_T)offset))
 #define PtrSub(ptr, offset) (PVOID)(((SIZE_T)ptr) - ((SIZE_T)offset))

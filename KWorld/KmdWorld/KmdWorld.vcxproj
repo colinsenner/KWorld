@@ -64,20 +64,18 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Inf Include="KmdWorld.inf" />
-  </ItemGroup>
-  <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Driver.c" />
-    <ClCompile Include="ThreadUnhideFromDebugger.c" />
-    <ClCompile Include="undocumented.c" />
+    <ClCompile Include="driver.cpp" />
+    <ClCompile Include="unhide_from_debugger.cpp" />
+    <ClCompile Include="nt_undocumented.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\DriverCommon.h" />
-    <ClInclude Include="ThreadUnhideFromDebugger.h" />
-    <ClInclude Include="undocumented.h" />
+    <ClInclude Include="..\Common\ku_shared.h" />
+    <ClInclude Include="driver.h" />
+    <ClInclude Include="unhide_from_debugger.h" />
+    <ClInclude Include="nt_undocumented.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

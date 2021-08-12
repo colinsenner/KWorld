@@ -35,5 +35,11 @@ Ethernet adapter VMware Network Adapter VMnet1:
 cmd> kdnet <host_ip> <port>
 ```
 
-# Setup Host machine
+## Setup Host machine
 * Windows SDK https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/
+
+## Batch scripts to setup your environment are located in
+```/KWorld/scripts```
+
+## DebugView
+If you're not seeing output from DebugView make sure to enable the registry settings "Debug Print Filter" (.reg file in /scripts)

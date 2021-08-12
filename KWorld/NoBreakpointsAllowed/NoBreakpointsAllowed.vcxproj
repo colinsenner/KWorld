@@ -90,11 +90,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="NoBreakpointsAllowed.cpp" />
-    <ClCompile Include="ThreadHideFromDebugger.cpp" />
+    <ClCompile Include="nba.cpp" />
+    <ClCompile Include="thread_hide_from_debugger.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ThreadHideFromDebugger.h" />
+    <ClInclude Include="thread_hide_from_debugger.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

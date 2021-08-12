@@ -1,6 +1,12 @@
 #pragma once
 #include <ntddk.h>
 
+namespace nt_undocumented {
+
+// Functions
+NTSTATUS Init();
+
+// Types
 typedef enum _SYSTEM_INFORMATION_CLASS { SystemProcessesAndThreadsInformation = 0x5 } SYSTEM_INFORMATION_CLASS;
 
 // https://processhacker.sourceforge.io/doc/ntexapi_8h_source.html
@@ -52,4 +58,4 @@ typedef NTSTATUS(NTAPI* fpZwQuerySystemInformation)(IN SYSTEM_INFORMATION_CLASS 
 
 extern fpZwQuerySystemInformation _ZwQuerySystemInformation;
 
-NTSTATUS InitUndocumented();
+}  // namespace nt_undocumented
