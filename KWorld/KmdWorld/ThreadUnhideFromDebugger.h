@@ -2,4 +2,6 @@
 #include <ntifs.h>
 #include <ntddk.h>
 
-NTSTATUS ThreadUnhideFromDebugger(HANDLE pid);
+#include "..\Common\DriverCommon.h"
+
+NTSTATUS ThreadUnhideFromDebugger(ProcessData data);

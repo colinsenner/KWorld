@@ -25,8 +25,9 @@ int main(char argc, char** argv) {
     return 0;
   }
 
-  // PID to ask the driver to disable ThreadHideFromDebugger
-  size_t pid = atoi(argv[1]);
+  // ProcessId to ask the driver to disable ThreadHideFromDebugger
+  ProcessData data;
+  data.ProcessId = atoi(argv[1]);
 
   device = CreateFileW(L"\\\\.\\KmdWorld", GENERIC_ALL, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, 0);
 
@@ -35,8 +36,8 @@ int main(char argc, char** argv) {
     return 1;
   }
 
-  printf("[+] Issuing IOCTL_THREAD_UNHIDE_FROM_DEBUGGER 0x%x for PID %zu\n", IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, pid);
-  status = DeviceIoControl(device, IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, &pid, sizeof(pid), outBuffer, sizeof(outBuffer),
+  printf("[+] Issuing IOCTL_THREAD_UNHIDE_FROM_DEBUGGER 0x%x for PID %lu\n", IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, data.ProcessId);
+  status = DeviceIoControl(device, IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, &data, sizeof(data), outBuffer, sizeof(outBuffer),
                            &bytesReturned, (LPOVERLAPPED)NULL);
 
   if (status) {
