@@ -11,7 +11,7 @@ UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
 
 void KmdWorldUnload(PDRIVER_OBJECT DriverObject) {
-  DbgPrintPrefix("Driver unloaded, deleting symbolic links and devices");
+  printk("Driver unloaded, deleting symbolic links and devices");
   IoDeleteDevice(DriverObject->DeviceObject);
   IoDeleteSymbolicLink(&DEVICE_SYMBOLIC_NAME);
 }
@@ -39,6 +39,7 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
       auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
 
+      printk("ProcessId from userland: %lu", data.ProcessId);
       status = ThreadUnhideFromDebugger(data);
 
       // HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
@@ -102,32 +103,32 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
   DriverObject->MajorFunction[IRP_MJ_CREATE] = KmdWorldCreateClose;
   DriverObject->MajorFunction[IRP_MJ_CLOSE] = KmdWorldCreateClose;
 
-  DbgPrintPrefix("Driver loaded");
+  printk("Driver loaded");
 
   // Create the device
   status = IoCreateDevice(DriverObject, 0, &DEVICE_NAME, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE,
                           &DriverObject->DeviceObject);
 
   if (NT_SUCCESS(status)) {
-    DbgPrintPrefix("Device %wZ created", DEVICE_NAME);
+    printk("Device %wZ created", DEVICE_NAME);
   } else {
-    DbgPrintPrefix("Could not create device %wZ", DEVICE_NAME);
+    printk("Could not create device %wZ", DEVICE_NAME);
     return status;
   }
 
   status = IoCreateSymbolicLink(&DEVICE_SYMBOLIC_NAME, &DEVICE_NAME);
 
   if (NT_SUCCESS(status)) {
-    DbgPrintPrefix("Symbolic link %wZ created", DEVICE_SYMBOLIC_NAME);
+    printk("Symbolic link %wZ created", DEVICE_SYMBOLIC_NAME);
   } else {
-    DbgPrintPrefix("Error creating symbolic link %wZ", DEVICE_SYMBOLIC_NAME);
+    printk("Error creating symbolic link %wZ", DEVICE_SYMBOLIC_NAME);
     return status;
   }
 
   status = InitUndocumented();
 
   if (!NT_SUCCESS(status)) {
-    DbgPrintPrefix("Error while initializing undocumented functions");
+    printk("Error while initializing undocumented functions");
     return status;
   }
 

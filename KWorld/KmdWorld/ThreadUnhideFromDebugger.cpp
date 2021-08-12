@@ -14,7 +14,7 @@ NTSTATUS LookupOffsetOfCrossThreadFlags() {
   PVOID Addr_PsIsThreadTerminating = MmGetSystemRoutineAddress(&routineName);
 
   if (!Addr_PsIsThreadTerminating) {
-    DbgPrintPrefix("[!] Couldn't locate function PsIsThreadTerminating");
+    printk("[!] Couldn't locate function PsIsThreadTerminating");
     return STATUS_UNSUCCESSFUL;
   }
 
@@ -26,7 +26,7 @@ NTSTATUS LookupOffsetOfCrossThreadFlags() {
   ULONG opcode = asm_bytes & 0x0000FFFF;
 
   if (opcode != 0x818B) {
-    DbgPrintPrefix("[!] Unexpected bytes at the beginning of function PsIsThreadTerminating");
+    printk("[!] Unexpected bytes at the beginning of function PsIsThreadTerminating");
     return STATUS_UNSUCCESSFUL;
   }
 
@@ -34,7 +34,7 @@ NTSTATUS LookupOffsetOfCrossThreadFlags() {
   // Set our offset to the immediate
   Offset_CrossThreadFlags = asm_bytes >> 16;
 
-  DbgPrintPrefix("[+] Found offset of CrossThreadFlags in nt!_ETHREAD: 0x%X", Offset_CrossThreadFlags);
+  printk("[+] Found offset of CrossThreadFlags in nt!_ETHREAD: 0x%X", Offset_CrossThreadFlags);
 
   return status;
 }
@@ -48,7 +48,7 @@ NTSTATUS UnhideThread(HANDLE tid) {
   status = PsLookupThreadByThreadId(tid, &pThread);
 
   if (!NT_SUCCESS(status)) {
-    DbgPrintPrefix("[!] Problem getting thread with tid: %llu", (ULONG_PTR)tid);
+    printk("[!] Problem getting thread with tid: %llu", (ULONG_PTR)tid);
     return status;
   }
 
@@ -57,7 +57,7 @@ NTSTATUS UnhideThread(HANDLE tid) {
 
   if (CHECK_BIT(*CrossThreadFlags, 2)) {
     // This thread was hidden, unhide it
-    DbgPrintPrefix("[+] Thread %llu unhidden (ETHREAD: %p)", (ULONG_PTR)tid, pThread);
+    printk("[+] Thread %llu unhidden (ETHREAD: %p)", (ULONG_PTR)tid, pThread);
     *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
   }
 
@@ -78,7 +78,7 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
 
   // On first run lookup the offset of CrossThreadFlags on an ETHREAD structure
   if (Offset_CrossThreadFlags == 0) {
-    DbgPrintPrefix("Offset_CrossThreadFlags is 0, looking up the offset now");
+    printk("Offset_CrossThreadFlags is 0, looking up the offset now");
     status = LookupOffsetOfCrossThreadFlags();
 
     if (!NT_SUCCESS(status))
@@ -110,7 +110,7 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
   spi = (PSYSTEM_PROCESS_INFORMATION)Buffer;
 
   if (!Buffer) {
-    DbgPrintPrefix("[!] Couldn't allocate memory for SystemProcessInformation");
+    printk("[!] Couldn't allocate memory for SystemProcessInformation");
     return STATUS_MEMORY_NOT_ALLOCATED;
   }
 
@@ -118,14 +118,14 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
 
   if (!NT_SUCCESS(status)) {
     ExFreePoolWithTag(Buffer, DRIVER_POOL_TAG);
-    DbgPrintPrefix("[!] ZwQuerySystemInformation failed");
+    printk("[!] ZwQuerySystemInformation failed");
     return status;
   }
 
   // Go through each process running
   while (spi->NextEntryOffset) {
     if (spi->UniqueProcessId == ULongToHandle(data.ProcessId)) {
-      DbgPrintPrefix("[+] Found process: %lu", data.ProcessId);
+      printk("[+] Found process: %lu", data.ProcessId);
 
       // Enumerate all threads of this process
       for (ULONG thread_index = 0; thread_index < spi->NumberOfThreads; ++thread_index) {
