@@ -5,7 +5,22 @@
 #include "..\Common\ku_shared.h"
 
 int Error(const char* message) {
-  printf("[!] %s (error %d)\n", message, GetLastError());
+  auto code = GetLastError();
+
+  printf("[!] %s (code %d)\n\n", message, code);
+
+  LPSTR errorText = NULL;
+
+  FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+                 code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&errorText, 0, NULL);
+
+  if (NULL != errorText) {
+    printf("Message:\n%s\n", errorText);
+
+    LocalFree(errorText);
+    errorText = NULL;
+  }
+
   return 1;
 }
 
@@ -36,7 +51,8 @@ int main(char argc, char** argv) {
     return 1;
   }
 
-  printf("[+] Issuing IOCTL_THREAD_UNHIDE_FROM_DEBUGGER 0x%x for PID %lu\n", IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, data.ProcessId);
+  printf("[+] Issuing IOCTL_THREAD_UNHIDE_FROM_DEBUGGER 0x%x for PID %lu\n", IOCTL_THREAD_UNHIDE_FROM_DEBUGGER,
+         data.ProcessId);
   status = DeviceIoControl(device, IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, &data, sizeof(data), outBuffer, sizeof(outBuffer),
                            &bytesReturned, (LPOVERLAPPED)NULL);
 
