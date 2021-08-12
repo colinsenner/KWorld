@@ -16,6 +16,8 @@ namespace KThreadUnhide
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             Settings.Default.Save();
+
+            ServiceInstaller.StopAndUninstall("KmdWorld");
         }
     }
 }
