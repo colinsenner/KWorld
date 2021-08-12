@@ -27,30 +27,17 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
   switch (IoControlCode) {
     case IOCTL_THREAD_UNHIDE_FROM_DEBUGGER:
-      DbgPrintPrefix("IOCTL_THREAD_UNHIDE_FROM_DEBUGGER (0x%x) issued",
-                     stackLocation->Parameters.DeviceIoControl.IoControlCode);
+      ASSERT(Irp->AssociatedIrp.SystemBuffer);
 
       if (stackLocation->Parameters.DeviceIoControl.InputBufferLength < sizeof(ProcessData)) {
         status = STATUS_BUFFER_TOO_SMALL;
         break;
       }
 
-      ASSERT(Irp->AssociatedIrp.SystemBuffer);
-
       auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
 
       printk("ProcessId from userland: %lu", data.ProcessId);
       status = ThreadUnhideFromDebugger(data);
-
-      // HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
-      // DbgPrintPrefix("PID from userland: %llu", pid);
-
-      // if (pid <= 4) {
-      //  DbgPrintPrefix("Not allowed on system process");
-      //  break;
-      //}
-
-      // status = ThreadUnhideFromDebugger(pid);
       break;
     default:
       status = STATUS_INVALID_DEVICE_REQUEST;
@@ -66,20 +53,6 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
 NTSTATUS KmdWorldCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   UNREFERENCED_PARAMETER(DeviceObject);
-
-  PIO_STACK_LOCATION stackLocation = NULL;
-  stackLocation = IoGetCurrentIrpStackLocation(Irp);
-
-  switch (stackLocation->MajorFunction) {
-    case IRP_MJ_CREATE:
-      DbgPrintPrefix("Handle to symbolink link %wZ opened", DEVICE_SYMBOLIC_NAME);
-      break;
-    case IRP_MJ_CLOSE:
-      DbgPrintPrefix("Handle to symbolink link %wZ closed", DEVICE_SYMBOLIC_NAME);
-      break;
-    default:
-      break;
-  }
 
   Irp->IoStatus.Information = 0;
   Irp->IoStatus.Status = STATUS_SUCCESS;
