@@ -78,6 +78,11 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
 
   BOOLEAN found = FALSE;
 
+  if (data.ProcessId <= 4) {
+    printk("[!] Not allowed on System processes");
+    return STATUS_UNSUCCESSFUL;
+  }
+
   // On first run lookup the offset of CrossThreadFlags on an ETHREAD structure
   if (Offset_CrossThreadFlags == 0) {
     printk("Offset_CrossThreadFlags is 0, looking up the offset now");
