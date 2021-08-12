@@ -27,6 +27,11 @@ namespace KThreadUnhide
             //var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
             var driverPath = @"D:\Gitlab\KWorld\KWorld\bin\KmdWorld.sys";
 
+            if (!File.Exists(driverPath)) {
+                MessageBox.Show($"Driver doesn't exist\n{driverPath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+            }
+
             if (!ServiceInstaller.ServiceIsInstalled(driverName))
                 ServiceInstaller.InstallAndStart(driverName, driverName, driverPath);
             else
