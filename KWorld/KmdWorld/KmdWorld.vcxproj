@@ -67,12 +67,13 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Driver.c" />
-    <ClCompile Include="ThreadUnhideFromDebugger.c" />
-    <ClCompile Include="undocumented.c" />
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="ThreadUnhideFromDebugger.cpp" />
+    <ClCompile Include="undocumented.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\DriverCommon.h" />
+    <ClInclude Include="Driver.h" />
     <ClInclude Include="ThreadUnhideFromDebugger.h" />
     <ClInclude Include="undocumented.h" />
   </ItemGroup>
