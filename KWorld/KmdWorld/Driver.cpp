@@ -1,3 +1,5 @@
+#include "Driver.h"
+
 #include <ntifs.h>
 #include <ntddk.h>
 
@@ -5,18 +7,16 @@
 #include "ThreadUnhideFromDebugger.h"
 #include "undocumented.h"
 
-DRIVER_INITIALIZE DriverEntry;
-
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
 
-void DriverUnload(PDRIVER_OBJECT DriverObject) {
+void KmdWorldUnload(PDRIVER_OBJECT DriverObject) {
   DbgPrintPrefix("Driver unloaded, deleting symbolic links and devices");
   IoDeleteDevice(DriverObject->DeviceObject);
   IoDeleteSymbolicLink(&DEVICE_SYMBOLIC_NAME);
 }
 
-NTSTATUS HandleCustomIOCTL(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   UNREFERENCED_PARAMETER(DeviceObject);
   PIO_STACK_LOCATION stackLocation = NULL;
 
@@ -30,35 +30,40 @@ NTSTATUS HandleCustomIOCTL(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
       DbgPrintPrefix("IOCTL_THREAD_UNHIDE_FROM_DEBUGGER (0x%x) issued",
                      stackLocation->Parameters.DeviceIoControl.IoControlCode);
 
-      ASSERT(stackLocation->Parameters.DeviceIoControl.InputBufferLength == sizeof(size_t));
-      ASSERT(Irp->AssociatedIrp.SystemBuffer);
-
-      HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
-      DbgPrintPrefix("PID from userland: %llu", pid);
-
-      if (pid <= 4) {
-        DbgPrintPrefix("Not allowed on system process");
+      if (stackLocation->Parameters.DeviceIoControl.InputBufferLength < sizeof(ProcessData)) {
+        status = STATUS_BUFFER_TOO_SMALL;
         break;
       }
 
-      status = ThreadUnhideFromDebugger(pid);
+      ASSERT(Irp->AssociatedIrp.SystemBuffer);
+
+      auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
+
+      status = ThreadUnhideFromDebugger(data);
+
+      // HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
+      // DbgPrintPrefix("PID from userland: %llu", pid);
+
+      // if (pid <= 4) {
+      //  DbgPrintPrefix("Not allowed on system process");
+      //  break;
+      //}
+
+      // status = ThreadUnhideFromDebugger(pid);
       break;
     default:
-      DbgPrintPrefix("Unsupported IOCTL: (0x%x)", IoControlCode);
-      status = STATUS_UNSUCCESSFUL;
+      status = STATUS_INVALID_DEVICE_REQUEST;
       break;
   }
 
   // How many bytes we're returning to userland
-  Irp->IoStatus.Information = 0;
   Irp->IoStatus.Status = status;
-
+  Irp->IoStatus.Information = 0;
   IoCompleteRequest(Irp, IO_NO_INCREMENT);
-
   return status;
 }
 
-NTSTATUS HandleIrpCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+NTSTATUS KmdWorldCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   UNREFERENCED_PARAMETER(DeviceObject);
 
   PIO_STACK_LOCATION stackLocation = NULL;
@@ -82,20 +87,20 @@ NTSTATUS HandleIrpCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   return STATUS_SUCCESS;
 }
 
-NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
   UNREFERENCED_PARAMETER(RegistryPath);
 
   NTSTATUS status = STATUS_SUCCESS;
 
   // routine that will execute when our driver is unloaded/service is stopped
-  DriverObject->DriverUnload = DriverUnload;
+  DriverObject->DriverUnload = KmdWorldUnload;
 
   // routine for handling IO requests from userland
-  DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = HandleCustomIOCTL;
+  DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = KmdWorldIoControl;
 
   // routines that will execute once a handle to our device's symbolik link is opened/closed
-  DriverObject->MajorFunction[IRP_MJ_CREATE] = HandleIrpCreateClose;
-  DriverObject->MajorFunction[IRP_MJ_CLOSE] = HandleIrpCreateClose;
+  DriverObject->MajorFunction[IRP_MJ_CREATE] = KmdWorldCreateClose;
+  DriverObject->MajorFunction[IRP_MJ_CLOSE] = KmdWorldCreateClose;
 
   DbgPrintPrefix("Driver loaded");
 
