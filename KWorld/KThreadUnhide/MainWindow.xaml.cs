@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.IO;
 
 // TODO Automatically filter out system processes
@@ -19,13 +16,14 @@ namespace KThreadUnhide
     public partial class MainWindow : Window
     {
         string driverName = "KmdWorld";
+        KmdWorld driver;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            //var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
-            var driverPath = @"D:\Gitlab\KWorld\KWorld\bin\KmdWorld.sys";
+            var driverPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{driverName}.sys");
+            //var driverPath = @"D:\Gitlab\KWorld\KWorld\bin\KmdWorld.sys";
 
             if (!File.Exists(driverPath)) {
                 MessageBox.Show($"Driver doesn't exist\n{driverPath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -36,6 +34,8 @@ namespace KThreadUnhide
                 ServiceInstaller.InstallAndStart(driverName, driverName, driverPath);
             else
                 ServiceInstaller.StartService(driverName);
+
+            driver = new KmdWorld();
 
             PopulateProcesses();
         }
@@ -80,9 +80,24 @@ namespace KThreadUnhide
             PopulateProcesses();
         }
 
+        // Allow double click
+
         private void unhideButton_Click(object sender, RoutedEventArgs e)
         {
+            DoUnhide();
+        }
 
+        private void OnMouseDoubleClicked(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            DoUnhide();
+        }
+
+        private void DoUnhide()
+        {
+            var process = (Process)processDataGrid.SelectedItem;
+
+            if (process != null)
+                driver.ThreadUnhideFromDebugger(process.Id);
         }
     }
 }

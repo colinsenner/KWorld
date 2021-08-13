@@ -10,9 +10,9 @@
 
     <Window.Resources>
         <!-- DataGridTextColumn -->
-        <Style TargetType="DataGridCell">
+        <!--<Style TargetType="DataGridCell">
             <Setter Property="Margin" Value="0,0,8,0"/>
-        </Style>
+        </Style>-->
     </Window.Resources>
 
     <Grid>
@@ -25,7 +25,7 @@
         </Grid.RowDefinitions>
 
         <!-- Process list -->
-        <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid x:Name="processDataGrid" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10" GridLinesVisibility="None" AutoGenerateColumns="False" IsReadOnly="True" MouseDoubleClick="OnMouseDoubleClicked">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id}" Header="Pid"/>
                 <DataGridTextColumn Binding="{Binding StartTime, StringFormat='hh:mm tt'}" Header="Start Time"/>

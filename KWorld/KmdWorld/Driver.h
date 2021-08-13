@@ -6,11 +6,8 @@
 #if DBG
 // If compiled in debug mode print to DebugView
 #define printk(s, ...) DbgPrint(DRIVER_PREFIX " " s "\n", __VA_ARGS__);
-
 #else
-
-#define printk(s, ...)
-
+#define printk(s, ...) DbgPrint(DRIVER_PREFIX " " s "\n", __VA_ARGS__);
 #endif  // DBG
 
 #define PtrAdd(ptr, offset) (PVOID)(((SIZE_T)ptr) + ((SIZE_T)offset))
