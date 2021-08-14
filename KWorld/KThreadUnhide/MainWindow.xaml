@@ -53,7 +53,7 @@
                                     UpdateSourceTrigger=PropertyChanged}"
                       Checked="showAllProcesses_Changed" Unchecked="showAllProcesses_Changed"/>
             <Button x:Name="refreshButton" Margin="8" Grid.Column="1" Content="Refresh" Click="refreshButton_Click"/>
-            <Button x:Name="unhideButton" Margin="8" Grid.Column="2" Content="Unhide" Click="unhideButton_Click"/>
+            <Button x:Name="unhideButton" Margin="8" Grid.Column="2" Content="Unhide All Threads" Click="unhideButton_Click"/>
         </Grid>
     </Grid>
 </Window>
