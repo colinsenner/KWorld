@@ -42,17 +42,17 @@ NTSTATUS LookupOffsetOfCrossThreadFlags() {
   return status;
 }
 
-NTSTATUS UnhideThread(HANDLE tid) {
-  NTSTATUS status = STATUS_SUCCESS;
+bool UnhideThread(HANDLE tid) {
+  NTSTATUS thread_was_unhidden = false;
 
   PETHREAD pThread;
 
   // Increases reference count on success
-  status = PsLookupThreadByThreadId(tid, &pThread);
+  NTSTATUS status = PsLookupThreadByThreadId(tid, &pThread);
 
   if (!NT_SUCCESS(status)) {
     printk("[!] Problem getting thread with tid: %llu", (ULONG_PTR)tid);
-    return status;
+    return false;
   }
 
   // Found the _ETHREAD  (dt nt!_ETHREAD <addr>)
@@ -62,20 +62,24 @@ NTSTATUS UnhideThread(HANDLE tid) {
     // This thread was hidden, unhide it
     printk("[+] Thread %llu unhidden (ETHREAD: %p)", (ULONG_PTR)tid, pThread);
     *CrossThreadFlags = CLEAR_BIT(*CrossThreadFlags, 2);
+
+    thread_was_unhidden = true;
   }
 
   ObDereferenceObject(pThread);
 
-  return status;
+  return thread_was_unhidden;
 }
 
-NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
+NTSTATUS ThreadUnhideFromDebugger(ProcessData data, ProcessDataComplete * outData) {
   NTSTATUS status = STATUS_SUCCESS;
   PSYSTEM_PROCESS_INFORMATION spi;
 
   // Query needed length.
   ULONG ReturnLength;
   PVOID Buffer;
+
+  ULONG num_threads_unhidden = 0;
 
   BOOLEAN found = FALSE;
 
@@ -142,7 +146,10 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
         if (ti->ClientId.UniqueProcess != spi->UniqueProcessId)
           continue;
 
-        UnhideThread(ti->ClientId.UniqueThread);
+        if (UnhideThread(ti->ClientId.UniqueThread)) {
+          // Thread was hidden and now isn't
+          num_threads_unhidden++;
+        }
       }
 
       found = TRUE;
@@ -157,6 +164,8 @@ NTSTATUS ThreadUnhideFromDebugger(ProcessData data) {
     status = STATUS_NOT_FOUND;
 
   ExFreePoolWithTag(Buffer, DRIVER_POOL_TAG);
+
+  outData->NumThreadsUnhidden = num_threads_unhidden;
 
   return status;
 }

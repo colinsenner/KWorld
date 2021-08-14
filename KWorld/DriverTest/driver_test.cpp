@@ -33,7 +33,12 @@ int main(char argc, char** argv) {
   HANDLE device = INVALID_HANDLE_VALUE;
   BOOL status = FALSE;
   DWORD bytesReturned = 0;
-  CHAR outBuffer[128] = {0};
+
+  // Data going to the driver
+  ProcessData data;
+
+  // Data coming back from the kernel
+  ProcessDataComplete kData;
 
   if (argc < 2) {
     printf("Usage: %s <pid>\n", argv[0]);
@@ -41,7 +46,6 @@ int main(char argc, char** argv) {
   }
 
   // ProcessId to ask the driver to disable ThreadHideFromDebugger
-  ProcessData data;
   data.ProcessId = atoi(argv[1]);
 
   device = CreateFileW(L"\\\\.\\KmdWorld", GENERIC_ALL, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, 0);
@@ -53,8 +57,10 @@ int main(char argc, char** argv) {
 
   printf("[+] Issuing IOCTL_THREAD_UNHIDE_FROM_DEBUGGER 0x%x for PID %lu\n", IOCTL_THREAD_UNHIDE_FROM_DEBUGGER,
          data.ProcessId);
-  status = DeviceIoControl(device, IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, &data, sizeof(data), outBuffer, sizeof(outBuffer),
+  status = DeviceIoControl(device, IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, &data, sizeof(data), &kData, sizeof(kData),
                            &bytesReturned, (LPOVERLAPPED)NULL);
+
+  printf("[+] NumThreadsUnhidden: %d\n", kData.NumThreadsUnhidden);
 
   if (status) {
     Info("Success");

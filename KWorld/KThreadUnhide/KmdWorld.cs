@@ -47,36 +47,49 @@ namespace KThreadUnhide
         {
             public int ProcessId;
         };
+
+        struct ProcessDataComplete
+        {
+            public int NumThreadsUnhidden;
+        }
         #endregion
 
         public void ThreadUnhideFromDebugger(int pid)
         {
             bool status;
-            IntPtr pData = IntPtr.Zero;
+            IntPtr inBuffer = IntPtr.Zero;
+            IntPtr outBuffer = IntPtr.Zero;
 
             // This is the struct we pass from C++
-            var data = new ProcessData() {
+            var inData = new ProcessData() {
                 ProcessId = pid
             };
 
+            uint bytesReturned = 0;
+
             try
             {
-                pData = Marshal.AllocHGlobal(Marshal.SizeOf(data));
+                outBuffer = Marshal.AllocHGlobal(Marshal.SizeOf<ProcessDataComplete>());
+                inBuffer = Marshal.AllocHGlobal(Marshal.SizeOf(inData));
 
-                Marshal.StructureToPtr(data, pData, false);
+                Marshal.StructureToPtr(inData, inBuffer, false);
 
-                uint _unused = 0;
-                status = DeviceIoControl(_device, (uint)ControlCode.IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, pData, (uint)Marshal.SizeOf<ProcessData>(), IntPtr.Zero, 0, out _unused, IntPtr.Zero);
+
+                status = DeviceIoControl(_device, (uint)ControlCode.IOCTL_THREAD_UNHIDE_FROM_DEBUGGER, inBuffer, (uint)Marshal.SizeOf(inData), outBuffer, (uint)Marshal.SizeOf<ProcessDataComplete>(), out bytesReturned, IntPtr.Zero);
             }
             finally
             {
-                Marshal.FreeHGlobal(pData);
+                Marshal.FreeHGlobal(inBuffer);
+                Marshal.FreeHGlobal(outBuffer);
             }
-
 
             if (status)
             {
-                MessageBox.Show("Unhid all threads from debugger.", "Success");
+                if (bytesReturned != Marshal.SizeOf<ProcessDataComplete>())
+                    throw new ApplicationException($"Unexpected data size back from the kernel driver.  Kernel returned {bytesReturned} but we were expecting {Marshal.SizeOf<ProcessDataComplete>()} back.");
+
+                var outData = Marshal.PtrToStructure<ProcessDataComplete>(outBuffer);
+                MessageBox.Show($"Successfully unhid all hidden threads from debugger. (Hidden threads: {outData.NumThreadsUnhidden})", "Success");
             }
             else
             {

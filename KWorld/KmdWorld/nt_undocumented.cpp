@@ -19,4 +19,5 @@ NTSTATUS Init() {
 
   return STATUS_SUCCESS;
 }
+
 }  // namespace nt_undocumented

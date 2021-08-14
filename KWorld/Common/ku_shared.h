@@ -7,4 +7,8 @@
 // Structs to pass data to kernel <=> userland
 typedef struct _ProcessData {
   ULONG ProcessId;
-} ProcessData;
+} ProcessData, *PProcessData;
+
+typedef struct _ProcessDataComplete {
+  ULONG NumThreadsUnhidden;
+} ProcessDataComplete, *PProcessDataComplete;

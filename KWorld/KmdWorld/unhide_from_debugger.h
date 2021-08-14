@@ -5,6 +5,6 @@
 
 namespace kmdworld {
 
-NTSTATUS ThreadUnhideFromDebugger(ProcessData data);
+NTSTATUS ThreadUnhideFromDebugger(ProcessData data, ProcessDataComplete* outData);
 
 }

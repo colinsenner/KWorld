@@ -21,8 +21,10 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
   NTSTATUS status = STATUS_SUCCESS;
 
+
   stackLocation = IoGetCurrentIrpStackLocation(Irp);
   ULONG IoControlCode = stackLocation->Parameters.DeviceIoControl.IoControlCode;
+  ULONG_PTR InformationLength = 0;
 
   switch (IoControlCode) {
     case IOCTL_THREAD_UNHIDE_FROM_DEBUGGER:
@@ -33,9 +35,17 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
         break;
       }
 
+      // Userland data
       auto data = *(ProcessData*)Irp->AssociatedIrp.SystemBuffer;
 
-      status = kmdworld::ThreadUnhideFromDebugger(data);
+      // Kernel data back to userland
+      ProcessDataComplete outData;
+
+      status = kmdworld::ThreadUnhideFromDebugger(data, &outData);
+
+      // Copy the data back to userland memory
+      RtlCopyMemory(Irp->AssociatedIrp.SystemBuffer, &outData, sizeof(outData));
+      InformationLength = sizeof(ProcessDataComplete);
       break;
     default:
       status = STATUS_INVALID_DEVICE_REQUEST;
@@ -43,8 +53,8 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   }
 
   // How many bytes we're returning to userland
+  Irp->IoStatus.Information = InformationLength;
   Irp->IoStatus.Status = status;
-  Irp->IoStatus.Information = 0;
   IoCompleteRequest(Irp, IO_NO_INCREMENT);
   return status;
 }
