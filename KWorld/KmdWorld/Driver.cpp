@@ -3,8 +3,8 @@
 #include <ntifs.h>
 
 #include "..\Common\ku_shared.h"
-#include "unhide_from_debugger.h"
 #include "nt_undocumented.h"
+#include "unhide_from_debugger.h"
 
 UNICODE_STRING DEVICE_NAME = RTL_CONSTANT_STRING(L"\\Device\\KmdWorld");
 UNICODE_STRING DEVICE_SYMBOLIC_NAME = RTL_CONSTANT_STRING(L"\\??\\KmdWorld");
@@ -20,7 +20,6 @@ NTSTATUS KmdWorldIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
   PIO_STACK_LOCATION stackLocation = NULL;
 
   NTSTATUS status = STATUS_SUCCESS;
-
 
   stackLocation = IoGetCurrentIrpStackLocation(Irp);
   ULONG IoControlCode = stackLocation->Parameters.DeviceIoControl.IoControlCode;

@@ -17,11 +17,8 @@ namespace KThreadUnhide
         {
             Settings.Default.Save();
 
-            if (KmdWorldService.IsInstalled("KmdWorld"))
-            {
-                KmdWorldService.Stop("KmdWorld");
-                KmdWorldService.Uninstall("KmdWorld");
-            }
+            KmdWorldService.Stop("KmdWorld");
+            KmdWorldService.Delete("KmdWorld");
         }
     }
 }

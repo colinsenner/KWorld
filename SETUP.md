@@ -1,45 +1,41 @@
-# KWorld
-Kernel driver for removing ThreadHideFromDebugger from processes.
+# VMWare Setup for Kernel Debugging
 
-# Installations
-* Turn Windows Features on of off: Hyper-V
-* VMWare Player
+## Steps
 
-# Setup VMWare
+* Install Windows 11 Pro on VMWare
+* Set up kernel debugging [here](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-kernel-mode-debugging-in-windbg--cdb--or-ntsd)
+* Copy over the compiled binaries onto the target
 
-## BCDEdit
+## On the target
 
-```bcdedit /debug on```
-
-## KDNET
-* https://www.youtube.com/watch?v=V7DJ_ptkOpM
-
-### On host machine
-```
-cmd> ipconfig
-
-...
-Ethernet adapter VMware Network Adapter VMnet1:
-
-   Connection-specific DNS Suffix  . :
-   Link-local IPv6 Address . . . . . : fe80::fdd0:db3a:2bfc:db59%23
-   Autoconfiguration IPv4 Address. . : 169.254.219.89                   <<<<<<< this ip address
-   Subnet Mask . . . . . . . . . . . : 255.255.0.0
-   Default Gateway . . . . . . . . . :
-...
-
+```bash
+# Elevated prompt
+bcdedit /debug on
+bcdedit /set testsigning on
 ```
 
-### On VM
-```
-cmd> kdnet <host_ip> <port>
-```
+## Manually controlling the kernel driver
 
-## Setup Host machine
-* Windows SDK https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/
+The `KThreadUnhide` GUI program automatically starts/stops/removes the `KmdWorld` driver automatically. Should you run into issues you can do it manually.
 
-## Batch scripts to setup your environment are located in
-```/KWorld/scripts```
+```bash
+# Copy KmdWorld.sys to C:\Windows\System32\drivers
+
+# Create the service
+sc create KmdWorld type= kernel binpath= "C:\Windows\System32\Drivers\KmdWorld.sys"
+
+# Start the service
+sc start KmdWorld
+
+# Stop the service
+sc stop KmdWorld
+
+# Remove the service
+sc delete KmdWorld
+```
 
 ## DebugView
 If you're not seeing output from DebugView make sure to enable the registry settings "Debug Print Filter" (.reg file in /scripts)
+
+## References
+* https://www.youtube.com/watch?v=V7DJ_ptkOpM

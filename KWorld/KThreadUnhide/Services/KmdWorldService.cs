@@ -66,11 +66,8 @@ namespace KThreadUnhide
         public static extern bool StartService(IntPtr hService, int dwNumServiceArgs, string[] lpServiceArgVectors);
         #endregion
 
-        public static void Uninstall(string serviceName)
+        public static void Delete(string serviceName)
         {
-            if (!IsInstalled(serviceName))
-                return;
-
             var scm = OpenSCManagerWrapper(ScmAccessRights.AllAccess);
             var service = OpenServiceWrapper(scm, serviceName, ServiceAccessRights.AllAccess);
 
