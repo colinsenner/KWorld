@@ -84,6 +84,11 @@ namespace KThreadUnhide
                     if (!DeleteService(service))
                         throw new ApplicationException("Failed to delete service.");
                 }
+                catch (ApplicationException e)
+                {
+                    MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
+                }
                 finally
                 {
                     CloseServiceHandle(service);
@@ -113,6 +118,11 @@ namespace KThreadUnhide
                 {
                     if (!DeleteService(service))
                         throw new ApplicationException("Failed to delete service.");
+                }
+                catch (ApplicationException e)
+                {
+                    MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
                 }
                 finally
                 {
@@ -272,6 +282,11 @@ namespace KThreadUnhide
                 {
                     CloseServiceHandle(service);
                 }
+            }
+            catch (ApplicationException e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
             }
             finally
             {

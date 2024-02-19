@@ -20,6 +20,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="App.config" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Update="Settings.Designer.cs">
 			<DesignTimeSharedInput>True</DesignTimeSharedInput>
 			<AutoGen>True</AutoGen>
