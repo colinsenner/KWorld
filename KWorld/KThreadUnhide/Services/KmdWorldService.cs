@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Windows;
 
 namespace KThreadUnhide
 {
-    public static class ServiceInstaller
+    public static class KmdWorldService
     {
         [StructLayout(LayoutKind.Sequential)]
         private class SERVICE_STATUS
@@ -65,7 +66,7 @@ namespace KThreadUnhide
 
         public static void StopAndUninstall(string serviceName)
         {
-            if (!ServiceIsInstalled(serviceName))
+            if (!IsInstalled(serviceName))
                 return;
 
             var scm = OpenSCManager(ScmAccessRights.Connect);
@@ -78,7 +79,7 @@ namespace KThreadUnhide
 
                 try
                 {
-                    StopService(service);
+                    StopServiceWrapper(service);
 
                     if (!DeleteService(service))
                         throw new ApplicationException("Failed to delete service.");
@@ -95,21 +96,28 @@ namespace KThreadUnhide
 
         }
 
-        public static bool ServiceIsInstalled(string serviceName)
+        public static void Uninstall(string serviceName)
         {
+            if (!IsInstalled(serviceName))
+                return;
+
             var scm = OpenSCManager(ScmAccessRights.Connect);
 
             try
             {
-                // Try to open the service, if it's installed
-
-                var service = OpenService(scm, serviceName, ServiceAccessRights.Start);
-
+                var service = OpenService(scm, serviceName, ServiceAccessRights.AllAccess);
                 if (service == IntPtr.Zero)
-                   return false;
+                    throw new ApplicationException("Could not open service.");
 
-                CloseServiceHandle(service);
-                return true;
+                try
+                {
+                    if (!DeleteService(service))
+                        throw new ApplicationException("Failed to delete service.");
+                }
+                finally
+                {
+                    CloseServiceHandle(service);
+                }
             }
             finally
             {
@@ -117,7 +125,28 @@ namespace KThreadUnhide
             }
         }
 
-        public static void InstallAndStart(string serviceName, string displayName, string fileName)
+        public static bool IsInstalled(string serviceName)
+        {
+            bool installed = false;
+            var scm = OpenSCManager(ScmAccessRights.Connect);
+
+            try
+            {
+                // Try to open the service, if it's installed
+                var service = OpenService(scm, serviceName, ServiceAccessRights.Start);
+
+                if (service != IntPtr.Zero)
+                    installed = true;
+            }
+            finally
+            {
+                CloseServiceHandle(scm);
+            }
+
+            return installed;
+        }
+
+        public static void Install(string serviceName, string displayName, string fileName)
         {
             var scm = OpenSCManager(null, null, ScmAccessRights.CreateService);
 
@@ -125,7 +154,7 @@ namespace KThreadUnhide
             {
                 var service = CreateService(scm,
                                             serviceName,
-                                            serviceName,
+                                            displayName,
                                             ServiceAccessRights.AllAccess,
                                             ServiceType.KernelDriver,
                                             ServiceBootFlag.DemandStart,
@@ -139,15 +168,11 @@ namespace KThreadUnhide
 
                 if (service == IntPtr.Zero)
                     throw new ApplicationException("Failed to install service.");
-
-                try
-                {
-                    StartService(service);
-                }
-                finally
-                {
-                    CloseServiceHandle(service);
-                }
+            }
+            catch (ApplicationException e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
             }
             finally
             {
@@ -155,7 +180,7 @@ namespace KThreadUnhide
             }
         }
 
-        public static void StartService(string serviceName)
+        public static void Start(string serviceName)
         {
             var scm = OpenSCManager(ScmAccessRights.Connect);
 
@@ -167,7 +192,12 @@ namespace KThreadUnhide
 
                 try
                 {
-                    StartService(service);
+                    StartServiceWrapper(service);
+                }
+                catch (ApplicationException e)
+                {
+                    MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
                 }
                 finally
                 {
@@ -219,7 +249,7 @@ namespace KThreadUnhide
             return status.dwCurrentState == desiredState;
         }
 
-        public static void StopService(string serviceName)
+        public static void Stop(string serviceName)
         {
             var scm = OpenSCManager(ScmAccessRights.Connect);
 
@@ -231,7 +261,12 @@ namespace KThreadUnhide
 
                 try
                 {
-                    StopService(service);
+                    StopServiceWrapper(service);
+                }
+                catch (ApplicationException e)
+                {
+                    MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
                 }
                 finally
                 {
@@ -261,7 +296,7 @@ namespace KThreadUnhide
             return status;
         }
 
-        private static void StartService(IntPtr service)
+        private static void StartServiceWrapper(IntPtr service)
         {
             // Check if it's already running
             var state = GetServiceState(service);
@@ -272,11 +307,11 @@ namespace KThreadUnhide
             if (!StartService(service, 0, null))
             {
                 int error = Marshal.GetLastWin32Error();
-                throw new ApplicationException($"Failed Starting service (code: {error})");
+                throw new ApplicationException($"Failed starting service (code: {error})");
             }
         }
 
-        private static void StopService(IntPtr service)
+        private static void StopServiceWrapper(IntPtr service)
         {
             // Check if it's already stopped
             if (GetServiceState(service) == ServiceState.Stopped)
@@ -285,7 +320,6 @@ namespace KThreadUnhide
             // If a stop is pending, wait for it.
             if (WaitForServiceStatus(service, ServiceState.StopPending, ServiceState.Stopped))
             {
-                // We're at our desired state
                 return;
             }
 
@@ -294,7 +328,7 @@ namespace KThreadUnhide
             if (ControlService(service, ServiceControl.Stop, status) == 0)
             {
                 int error = Marshal.GetLastWin32Error();
-                throw new ApplicationException($"Failed Control service (code: {error})");
+                throw new ApplicationException($"Failed control service (code: {error})");
             }
 
             //

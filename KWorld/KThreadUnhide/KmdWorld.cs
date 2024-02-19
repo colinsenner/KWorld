@@ -50,7 +50,9 @@ namespace KThreadUnhide
 
         struct ProcessDataComplete
         {
+#pragma warning disable CS0649 // Field 'KmdWorld.ProcessDataComplete.NumThreadsUnhidden' is never assigned to, and will always have its default value 0
             public int NumThreadsUnhidden;
+#pragma warning restore CS0649
         }
         #endregion
 
@@ -61,7 +63,8 @@ namespace KThreadUnhide
             IntPtr outBuffer = IntPtr.Zero;
 
             // This is the struct we pass from C++
-            var inData = new ProcessData() {
+            var inData = new ProcessData()
+            {
                 ProcessId = pid
             };
 
