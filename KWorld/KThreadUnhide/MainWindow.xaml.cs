@@ -29,12 +29,16 @@ namespace KThreadUnhide
                 Application.Current.Shutdown();
             }
 
-            if (!KmdWorldService.IsInstalled(driverName))
+            try
             {
                 KmdWorldService.Install(driverName, driverName, driverPath);
+                KmdWorldService.Start(driverName);
             }
-
-            KmdWorldService.Start(driverName);
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+            }
 
             driver = new KmdWorld();
 

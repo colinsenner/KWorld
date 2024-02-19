@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -31,8 +32,7 @@ namespace KThreadUnhide
 
             if (_device == IntPtr.Zero)
             {
-                var error = Marshal.GetLastWin32Error();
-                throw new ApplicationException($"Couldn't get a handle to the driver (code {error}).");
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 
@@ -96,7 +96,7 @@ namespace KThreadUnhide
             }
             else
             {
-                throw new ApplicationException($"DeviceIoControl error (code {Marshal.GetLastWin32Error()})");
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 
