@@ -2,7 +2,11 @@
 
 KWorld is a kernel driver for removing the anti-debugging technique ThreadHideFromDebugger from processes.
 
-![KWorld](images/Demo.mp4)
+
+
+https://github.com/colinsenner/KWorld/assets/13701799/dd3bfc58-9b09-429f-b81c-c40d1b63640c
+
+
 
 ## Tested on
 
