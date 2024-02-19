@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -31,8 +32,7 @@ namespace KThreadUnhide
 
             if (_device == IntPtr.Zero)
             {
-                var error = Marshal.GetLastWin32Error();
-                throw new ApplicationException($"Couldn't get a handle to the driver (code {error}).");
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 
@@ -50,7 +50,9 @@ namespace KThreadUnhide
 
         struct ProcessDataComplete
         {
+#pragma warning disable CS0649 // Field 'KmdWorld.ProcessDataComplete.NumThreadsUnhidden' is never assigned to, and will always have its default value 0
             public int NumThreadsUnhidden;
+#pragma warning restore CS0649
         }
         #endregion
 
@@ -61,7 +63,8 @@ namespace KThreadUnhide
             IntPtr outBuffer = IntPtr.Zero;
 
             // This is the struct we pass from C++
-            var inData = new ProcessData() {
+            var inData = new ProcessData()
+            {
                 ProcessId = pid
             };
 
@@ -93,7 +96,7 @@ namespace KThreadUnhide
             }
             else
             {
-                throw new ApplicationException($"DeviceIoControl error (code {Marshal.GetLastWin32Error()})");
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 

@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <stdio.h>
+
 #include <thread>
 
 #include "thread_hide_from_debugger.hpp"
@@ -17,7 +18,7 @@ int main() {
   printf("[+] PID: %d (0x%X)\n", GetCurrentProcessId(), GetCurrentProcessId());
   printf("[+] Main thread id: %d (0x%X)\n", GetCurrentThreadId(), GetCurrentThreadId());
 
-  std::thread th2 (thread_two);
+  std::thread th2(thread_two);
 
   if (ThreadHideFromDebugger::Enable()) {
     printf("[+] Thread hidden from debugger\n");

@@ -1,23 +1,30 @@
 # WinDbg commands
 
+Helpful commands for debugging Windows kernel and user mode applications.
 
-```
-!process 0 0 nba.exe
+```bash
+# List this process
+!process 0 0 NoBreakpointsAllowed.exe
 
-!process addr 2
+# List the process threads
+!process ffff8008b57c2080 2
 
+# List thread information for a specific thread
 !thread ffffe00000e6d080
 
+# List the _EPROCESS structure
 dt nt!_EPROCESS addr
 
+# List the _ETHREAD structure
 dt nt!_ETHREAD 0xffffa103f083f568
 
-db 0xffffa103f083f568+510
+# CrossThreadFlags
+db 0xffffa103f083f568+560
 
 # ThreadListHead
 dt _LIST_ENTRY ffffa103f3796080+5e0
 
-0: kd> db ffffa103f083f080+510
+db ffffa103f083f080+510
 
 ffffa103`f083f590  06 54 00 00 00 00 00 00-00 00 00 00 00 00 00 00  .T..............
 ffffa103`f083f5a0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00  ................
@@ -33,15 +40,10 @@ eb ffffa103`f083f590 2  (6, unset bit 3 = 2)
 ```
 
 # Structures
-```
-EPROCESS
-...
+```bash
+# _EPROCESS
 +0x5e0 ThreadListHead   : _LIST_ENTRY
-...
 
-
-ETHREAD
-...
+# _ETHREAD
 +0x4e8 ThreadListEntry  : _LIST_ENTRY
-...
 ```
