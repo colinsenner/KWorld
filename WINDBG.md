@@ -47,3 +47,5 @@ eb ffffa103`f083f590 2  (6, unset bit 3 = 2)
 # _ETHREAD
 +0x4e8 ThreadListEntry  : _LIST_ENTRY
 ```
+# Attach to process
+.process /p ffff8a84bc5de0c0; !peb 6efab23000
