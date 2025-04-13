@@ -22,7 +22,7 @@ jobs:
 
     - name: Build
       run: |
-        msbuild.exe ${{ github.event.repository.name }}.sln /m /verbosity:minimal /t:Rebuild /p:Configuration=Release /p:Platform=x64
+        msbuild KWorld/KWorld.sln /m /verbosity:minimal /t:Rebuild /p:Configuration=Release /p:Platform=x64
         ./release.bat
 
     - name: Get current time
